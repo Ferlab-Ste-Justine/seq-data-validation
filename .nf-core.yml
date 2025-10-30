@@ -1,0 +1,76 @@
+repository_type: pipeline
+
+nf_core_version: 3.3.2
+
+lint:
+  files_unchanged:
+    - .prettierignore
+    - LICENSE
+    - .prettierignore
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-seq-data-validation_logo_light.png
+    - docs/images/nf-core-seq-data-validation_logo_light.png
+    - docs/images/nf-core-seq-data-validation_logo_dark.png
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/CONTRIBUTING.md
+    - .github/PULL_REQUEST_TEMPLATE.md
+    - assets/email_template.txt
+    - docs/README.md
+    - .prettierignore
+    - .github/CONTRIBUTING.md
+    - .prettierignore
+  nextflow_config:
+    - manifest.name
+    - manifest.homePage
+    - validation.help.beforeText
+    - validation.help.afterText
+    - validation.summary.beforeText
+    - validation.summary.afterText
+    - process.cpus
+    - process.memory
+    - process.time
+    - custom_config
+    - params.custom_config_version
+    - params.custom_config_base
+  multiqc_config:
+    - report_comment
+  files_exist:
+    - assets/email_template.html
+    - assets/sendmail_template.txt
+    - assets/email_template.txt
+    - LICENSE
+    - CODE_OF_CONDUCT.md
+    - assets/nf-core-seq-data-validation_logo_light.png
+    - docs/images/nf-core-seq-data-validation_logo_light.png
+    - docs/images/nf-core-seq-data-validation_logo_dark.png
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/workflows/awstest.yml
+    - .github/workflows/awsfulltest.yml
+    - conf/igenomes.config
+    - conf/igenomes_ignored.config
+    - conf/igenomes.config
+  included_configs: false
+
+template:
+  org: Ferlab-Ste-Justine
+  name: seq-data-validation
+  description: Pipeline to validate the integrity of sequencing data files
+  author: Georgette Femerling, Félix-Antoine Le Sieur, Samantha Yue, Lysian Bouchard, David Morais
+  version: 1.0.0dev
+  force: true
+  outdir: .
+  skip_features:
+    - license
+    - igenomes
+    - fastqc
+    - nf_core_configs
+    - seqera_platform
+    - gpu
+    - gitpod
+    - codespaces
+    - vscode
+    - rocrate
+    - email
+    - adaptivecard
+    - slackreport
+  is_nfcore: false
