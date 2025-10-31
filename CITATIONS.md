@@ -9,8 +9,11 @@
 > Di Tommaso P, Chatzou M, Floden EW, Barja PP, Palumbo E, Notredame C. Nextflow enables reproducible computational workflows. Nat Biotechnol. 2017 Apr 11;35(4):316-319. doi: 10.1038/nbt.3820. PubMed PMID: 28398311.
 
 ## Pipeline tools
+- [Fq](https://github.com/stjude-rust-labs/fq)
 
-
+- [Seqfu](https://pubmed.ncbi.nlm.nih.gov/34066939/)
+  
+> Telatin A, Fariselli P, Birolo G. SeqFu: A Suite of Utilities for the Robust and Reproducible Manipulation of Sequence Files. Bioengineering (Basel). 2021 May 7;8(5):59. doi: 10.3390/bioengineering8050059. PMID: 34066939; PMCID: PMC8148589.
 
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
