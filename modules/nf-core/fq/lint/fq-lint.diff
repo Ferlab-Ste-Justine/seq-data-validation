@@ -1,0 +1,31 @@
+Changes in component 'nf-core/fq/lint'
+'modules/nf-core/fq/lint/meta.yml' is unchanged
+Changes in 'fq/lint/main.nf':
+--- modules/nf-core/fq/lint/main.nf
++++ modules/nf-core/fq/lint/main.nf
+@@ -21,9 +21,20 @@
+     def args   = task.ext.args ?: ''
+     def prefix = task.ext.prefix ?: "${meta.id}"
+     """
++    set +e
++    FQLINT_EXIT_CODE=0
++
++    # log is written to stdout, error to stderr when --lint-mode panic (default)
+     fq lint \\
+         $args \\
+         $fastq > ${prefix}.fq_lint.txt
++
++    FQ_LINT_EXIT_CODE=\$?
++    if [ \$FQ_LINT_EXIT_CODE -ne 0 ]; then
++        if [ \$FQ_LINT_EXIT_CODE -ne 1 ]; then
++            exit \$FQ_LINT_EXIT_CODE
++        fi
++    fi
+ 
+     cat <<-END_VERSIONS > versions.yml
+     "${task.process}":
+
+'modules/nf-core/fq/lint/environment.yml' is unchanged
+'modules/nf-core/fq/lint/tests/main.nf.test.snap' is unchanged
+'modules/nf-core/fq/lint/tests/main.nf.test' is unchanged
+************************************************************
