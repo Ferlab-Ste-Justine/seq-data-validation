@@ -1,0 +1,89 @@
+// nf-core modules test seqfu/check
+nextflow_process {
+
+    name "Test Process SEQFU_CHECK"
+    script "../main.nf"
+    process "SEQFU_CHECK"
+    config "./nextflow.config"
+
+    tag "modules"
+    tag "modules_"
+    tag "seqfu"
+    tag "seqfu/check"
+
+    test("test_seqfu_success") {
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test', single_end:false ], // meta map
+                             [ file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                               file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_2.fastq.gz', checkIfExists: true) ]
+                           ]
+                """
+            }
+        }
+
+        then {
+            assertAll (
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert process.out.check.get(0).get(1) ==~ ".*/test.check.tsv" },
+                { assert path(process.out.lint.get(0).get(1)).getText().contains("OK") },
+                { assert path(process.out.lint.get(0).get(1)).getText().contains("PE") },
+            )
+        }
+
+    }
+
+    test("test_seqfu_fail") {
+
+        when {
+            process {
+                """
+                input[0] = [ [ id:'test', single_end:false ], // meta map
+                             [ file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                               file(params.modules_testdata_base_path + 'genomics/prokaryotes/candidatus_portiera_aleyrodidarum/illumina/fastq/test_2.fastq.gz', checkIfExists: true) ]
+                           ]
+                """
+            }
+        }
+
+        then {
+            assertAll (
+                { assert !process.success },
+                { assert snapshot(process.out).match() },
+            )
+        }
+
+    }
+
+    test("test_seqfu_fail - Safe exit") {
+
+        when {
+            params {
+                module_args = '--safe-exit'
+            }   
+            process {
+                """
+                input[0] = [ [ id:'test', single_end:false ], // meta map
+                             [ file(params.modules_testdata_base_path + 'genomics/sarscov2/illumina/fastq/test_1.fastq.gz', checkIfExists: true),
+                               file(params.modules_testdata_base_path + 'genomics/prokaryotes/candidatus_portiera_aleyrodidarum/illumina/fastq/test_2.fastq.gz', checkIfExists: true) ]
+                           ]
+                """
+            }
+        }
+
+        then {
+            assertAll (
+                { assert process.success },
+                { assert snapshot(process.out).match() },
+                { assert process.out.check.get(0).get(1) ==~ ".*/test.check.tsv" },
+                { assert path(process.out.lint.get(0).get(1)).getText().contains("ERR") },
+                { assert path(process.out.lint.get(0).get(1)).getText().contains("PE") },
+            )
+        }
+
+    }
+
+}
