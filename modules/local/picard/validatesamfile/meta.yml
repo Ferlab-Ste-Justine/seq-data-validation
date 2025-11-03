@@ -1,0 +1,61 @@
+---
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "picard_validatesamfile"
+## TODO nf-core: Add a description of the module and list keywords
+description: "Module for validating SAM/BAM files using Picard"
+keywords:
+  - bam
+  - BAM/CRAM/SAM
+  - validation
+  - picard
+  - format
+tools:
+  - "picard":
+      ## TODO nf-core: Add a description and other details for the software below
+      description: "Java tools for working with NGS data in the BAM format"
+      homepage: "None"
+      documentation: "None"
+      tool_dev_url: "https://github.com/broadinstitute/picard"
+      doi: ""
+      licence: ["MIT"]
+      identifier: biotools:picard_tools
+
+input:
+  # Only when we have meta
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1', single_end:false ]`
+    - bam:
+        type: file
+        description: BAM/CRAM/SAM file
+        pattern: "*.{bam,cram,sam}"
+        ontologies:
+          - edam: "http://edamontology.org/format_25722"
+          - edam: "http://edamontology.org/format_2573"
+          - edam: "http://edamontology.org/format_3462"
+
+output:
+  hist:
+    - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1', single_end:false ]`
+    - "*.hist.txt":
+        type: file
+        description: Histogram file
+        pattern: "*.hist.txt"
+        ontologies:
+          - edam: "http://edamontology.org/format_2330" # txt file
+  versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+
+authors:
+  - "@georgette-femerling"
+maintainers:
+  - "@georgette-femerling"
