@@ -6,7 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Unreleased - [date]
 
 ### `Added`
-- [#3](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/3) FASTQ validaiton workflow
+
+- [#4](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/4) BAM/CRAM validation workflow
+
+- [#3](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/3) FASTQ validation workflow
 
 ### `Fixed`
 
