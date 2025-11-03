@@ -18,7 +18,7 @@ workflow FASTQ_FILE_INTEGRITY {
         .join(FQ_LINT.out.lint)
         .map { meta, fqfiles, out_sfc, out_fql ->
             [ meta, fqfiles[0], fqfiles[1], [
-                [ process:'seqfu_check', output:out_sfc], 
+                [ process:'seqfu_check', output:out_sfc],
                 [ process:'fq_lint', output:out_fql]
             ]]
         }

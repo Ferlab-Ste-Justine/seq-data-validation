@@ -2,11 +2,11 @@
 name: "seqfu_check"
 description: "Evaluates the integrity of DNA FASTQ files."
 keywords:
-- check
-- fastq
-- fasta
-- qc
-- format
+  - check
+  - fastq
+  - fasta
+  - qc
+  - format
 tools:
   - "seqfu":
       description: "DNA sequence utilities for FASTX files"
@@ -18,34 +18,34 @@ tools:
       identifier: biotools:seqfu
 
 input:
-- - meta:
-      type: map
-      description: Groovy Map containing sample information. e.g. `[ id:'sample1' ]`
-  - fastas:
-      type: file
-      description: Input files (mainly FASTA, FASTQ supported)
-      pattern: "*.{fq,fastq}[.gz]"
-      ontologies:
-      - edam: http://edamontology.org/format_2545  # FASTQ-like
-output:
-  dna_sequence:
   - - meta:
         type: map
         description: Groovy Map containing sample information. e.g. `[ id:'sample1' ]`
-    - '*.{tsv}':
-        type: file      
-        description: Output table (TSV format)
-        pattern: '*.{tsv}'
+    - fastas:
+        type: file
+        description: Input files (mainly FASTA, FASTQ supported)
+        pattern: "*.{fq,fastq}[.gz]"
         ontologies:
-        - edam: http://edamontology.org/format_3475  # TSV
+          - edam: http://edamontology.org/format_2545 # FASTQ-like
+output:
+  dna_sequence:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[ id:'sample1' ]`
+      - "*.{tsv}":
+          type: file
+          description: Output table (TSV format)
+          pattern: "*.{tsv}"
+          ontologies:
+            - edam: http://edamontology.org/format_3475 # TSV
   versions:
-  - versions.yml:
-      type: file
-      description: File containing software versions
-      pattern: versions.yml
-      ontologies:
-      - edam: http://edamontology.org/format_3750  # YAML
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: versions.yml
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
 authors:
-- "@georgette-femerling"
+  - "@georgette-femerling"
 maintainers:
-- "@georgette-femerling"
+  - "@georgette-femerling"

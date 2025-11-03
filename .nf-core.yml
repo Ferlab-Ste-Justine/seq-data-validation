@@ -45,6 +45,11 @@ lint:
     - conf/igenomes.config
     - conf/igenomes_ignored.config
     - conf/igenomes.config
+    - .github/ISSUE_TEMPLATE/bug_report.yml
+    - .github/ISSUE_TEMPLATE/config.yml
+    - .github/ISSUE_TEMPLATE/feature_request.yml
+    - .github/workflows/branch.yml
+    - .github/workflows/linting_comment.yml
   included_configs: false
 
 template:

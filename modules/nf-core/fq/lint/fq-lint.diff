@@ -21,7 +21,7 @@ Changes in 'fq/lint/main.nf':
 +            exit \$FQ_LINT_EXIT_CODE
 +        fi
 +    fi
- 
+
      cat <<-END_VERSIONS > versions.yml
      "${task.process}":
 
