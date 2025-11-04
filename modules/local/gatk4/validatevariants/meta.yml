@@ -1,0 +1,92 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+name: "gatk4_validatevariants"
+description: write your description here
+keywords:
+  - "GATK4"
+  - "ValidateVariants"
+  - "VCF"
+  - "validation"
+tools:
+  - gatk4:
+      description: |
+        Developed in the Data Sciences Platform at the Broad Institute, the toolkit offers a wide variety of tools
+        with a primary focus on variant discovery and genotyping. Its powerful processing engine
+        and high-performance computing features make it capable of taking on projects of any size.
+      homepage: https://gatk.broadinstitute.org/hc/en-us
+      documentation: https://gatk.broadinstitute.org/hc/en-us/categories/360002369672s
+      doi: 10.1158/1538-7445.AM2017-3590
+      licence: ["Apache-2.0"]
+      identifier: ""
+
+input:
+  - - meta:
+        type: map
+        description: |
+          Groovy Map containing sample information
+          e.g. `[ id:'sample1' ]`
+    - input:
+        type: file
+        description: VCF/gVCF file
+        pattern: "*.{vcf,gvcf,g.vcf,vcf.gz,gvcf.gz,g.vcf.gz}"
+        ontologies:
+          - edam: "http://edamontology.org/format_3016" # vcf
+          - edam: "http://edamontology.org/format_4018" # gvcf
+    - input_tbi:
+        type: file
+        description: Tabix index file for VCF
+        pattern: "*.{tbi}"
+        ontologies: []
+    - intervals:
+        type: file
+        description: BED file with intervals to restrict analysis to
+        pattern: "*.bed"
+        ontologies:
+          - edam: "http://edamontology.org/format_3003" # BED
+  - fasta:
+      type: file
+      description: Reference genome FASTA file
+      pattern: "*.{fa,fasta,fa.gz,fasta.gz}"
+      ontologies:
+        - edam: "http://edamontology.org/format_1929" # FASTA
+  - fai:
+      type: file
+      description: FASTA index file
+      pattern: "*.fai"
+      ontologies: []
+  - dict:
+      type: file
+      description: Sequence dictionary file
+      pattern: "*.dict"
+      ontologies: []
+  - dbsnp:
+      type: file
+      description: dbSNP VCF file
+      pattern: "*.{vcf,vcf.gz}"
+      ontologies:
+        - edam: "http://edamontology.org/format_3464" # VCF
+
+output:
+  txt:
+    - - meta:
+          type: map
+          description: |
+            Groovy Map containing sample information
+            e.g. `[ id:'sample1' ]`
+      - "*.txt":
+          type: file
+          description: Output text file from ValidateVariants
+          pattern: "*.txt"
+          ontologies:
+            - edam: "http://edamontology.org/format_2330" # Text file
+  versions:
+    - "versions.yml":
+        type: file
+        description: File containing software versions
+        pattern: "versions.yml"
+        ontologies:
+          - edam: "http://edamontology.org/format_3750" # YAML
+
+authors:
+  - "@georgette-femerling"
+maintainers:
+  - "@georgette-femerling"
