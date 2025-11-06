@@ -67,21 +67,36 @@ workflow PIPELINE_INITIALISATION {
 
     channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
-        .map {
-            meta, fastq_1, fastq_2 ->
-                if (!fastq_2) {
-                    return [ meta.id, meta + [ single_end:true ], [ fastq_1 ] ]
+        .map { meta, file1, file2 ->
+            def fileType = meta.fileType ?: inferFileTypeFromExtension(file1)
+            [ meta + [ participant_sample: "${meta.participant}_${meta.sample}", fileType: fileType ], file1, file2 ]
+        }
+        .tap { ch_participant_sample } // save raw input channel
+        .map { meta, _file1, _file2 -> meta.fileType }
+        .reduce([:]) { counts, fileType ->
+            counts[fileType] = (counts[fileType] ?: 0) + 1
+            counts
+        }
+        .combine(ch_participant_sample)
+        .map { counts, meta, file1, file2 ->
+            def count = counts[meta.fileType]
+            [ meta + [ count:count ] , file1, file2 ] }
+        .map { meta, file1, file2 ->
+            if (meta.fileType == "FASTQ") {
+                if (!file2) {
+                    return [ meta + [ single_end:true ], [ file1 ] ]
                 } else {
-                    return [ meta.id, meta + [ single_end:false ], [ fastq_1, fastq_2 ] ]
+                    return [ meta + [ single_end:false ], [ file1, file2 ] ]
                 }
-        }
-        .groupTuple()
-        .map { samplesheet ->
-            validateInputSamplesheet(samplesheet)
-        }
-        .map {
-            meta, fastqs ->
-                return [ meta, fastqs.flatten() ]
+            }
+            else {
+                if (!file2) {
+                    log.info("Index file not provided for ${file1}. Attempting to infer index from file path.")
+                    def index_file = findIndex(meta.fileType, file1)
+                    return [ meta, [file1, index_file]]
+                }
+            }
+            [ meta, [file1, file2] ]
         }
         .set { ch_samplesheet }
 
@@ -127,6 +142,36 @@ workflow PIPELINE_COMPLETION {
 */
 
 //
+// Infer fileType from file extension
+//
+def inferFileTypeFromExtension(file) {
+    def name = file.getFileName().toString()
+    if (name.contains('.fastq') || name.contains('.fq')) {
+        return "FASTQ"
+    } else if (name.endsWith('.bam')) {
+        return "BAM"
+    } else if (name.endsWith('.cram')) {
+        return "CRAM"
+    } else if (name.contains('.gvcf') || name.contains('.g.vcf')) {
+        return "GVCF"
+    } else if (name.contains('.vcf')) {
+        return "VCF"
+    } else {
+        error("Could not infer fileType from file extension for file: ${name}. Please provide fileType in the input samplesheet.")
+    }
+}
+
+//
+// Find index file for alignment or variant files
+//
+def findIndex(fileType, dataFile) {
+    def index = dataFile.toString() + (fileType in ["BAM","CRAM"] ? (fileType == "BAM" ? '.bai' : '.crai') : '.tbi')
+    if(!file(index).exists()) {
+        error("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+    }
+}
+
+//
 // Validate channels from input samplesheet
 //
 def validateInputSamplesheet(input) {
@@ -140,6 +185,7 @@ def validateInputSamplesheet(input) {
 
     return [ metas[0], fastqs ]
 }
+
 //
 // Generate methods description for MultiQC
 //

@@ -7,27 +7,68 @@
     "items": {
         "type": "object",
         "properties": {
+            "participant": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "participant ID must be provided and cannot contain spaces",
+                "meta": ["participant"]
+            },
             "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "Sample name must be provided and cannot contain spaces",
-                "meta": ["id"]
+                "errorMessage": "Sample ID must be provided and cannot contain spaces",
+                "meta": ["id", "sample"]
             },
-            "fastq_1": {
+            "strategy": {
                 "type": "string",
-                "format": "file-path",
-                "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 1 must be provided, cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "errorMessage": "Experimental strategy. Required if files from multiple strategies present in samplesheet. Must be one of: WGS, WXS, TARS, RNAS, ATACS, BIS, TMS, CHIPS. Defaults to WGS if not provided.",
+                "meta": ["sequencingType"],
+                "default": "WGS",
+                "enum": ["WGS", "WXS", "TARS", "RNAS", "ATACS", "BIS", "TMS", "CHIPS"]
             },
-            "fastq_2": {
+            "status": {
+                "type": "integer",
+                "errorMessage": "Status can only be 0 (normal) or 1 (tumor). Defaults to 0, if none is supplied.",
+                "meta": ["status"],
+                "default": 0,
+                "minimum": 0,
+                "maximum": 1
+            },
+            "lane": {
                 "type": "string",
+                "pattern": "^\\S+$",
+                "meta": ["lane"]
+            },
+            "runId": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "meta": ["runId"]
+            },
+            "fileType": {
+                "errorMessage": "File type must be one of: fastq, bam, cram, gvcf. Defaults to fastq, if none is supplied.",
+                "meta": ["fileType"],
+                "type": "string",
+                "enum": ["FASTQ", "BAM", "CRAM", "GVCF", "VCF"]
+            },
+            "file1": {
+                "errorMessage": "File name cannot contain spaces and must have a valid extension according to the fileType provided.",
+                "type": "string",
+                "pattern": "^\\S+\\.(f(ast)?q|cram|bam|g?vcf)(\\.gz)?$",
                 "format": "file-path",
-                "exists": true,
-                "pattern": "^([\\S\\s]*\\/)?[^\\s\\/]+\\.f(ast)?q\\.gz$",
-                "errorMessage": "FastQ file for reads 2 cannot contain spaces and must have extension '.fq.gz' or '.fastq.gz'"
+                "exists": true
+            },
+            "file2": {
+                "errorMessage": "File name cannot contain spaces and must have a valid extension according to the fileType provided.",
+                "type": "string",
+                "pattern": "^\\S+\\.(f(ast)?q(\\.gz)?|crai|bai|csi|tbi|idx)$",
+                "format": "file-path",
+                "exists": true
             }
         },
-        "required": ["sample", "fastq_1"]
+        "dependentRequired": {
+            "file2": ["file1"]
+        },
+        "required": ["participant", "sample", "file1"],
+        "uniqueEntries": ["lane", "runId", "participant", "sample", "strategy"]
     }
 }
