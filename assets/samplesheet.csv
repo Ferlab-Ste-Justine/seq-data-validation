@@ -1,3 +1,11 @@
-sample,fastq_1,fastq_2
-SAMPLE_PAIRED_END,/path/to/fastq/files/AEG588A1_S1_L002_R1_001.fastq.gz,/path/to/fastq/files/AEG588A1_S1_L002_R2_001.fastq.gz
-SAMPLE_SINGLE_END,/path/to/fastq/files/AEG588A4_S4_L003_R1_001.fastq.gz,
+participant,sample,strategy,lane,fileType,file1,file2
+P001,S001,WGS,L001,FASTQ,data-test/test1/sample1_R1.fastq.gz,data-test/test1/sample1_R2.fastq.gz
+P001,S001,WGS,L002,FASTQ,data-test/test1/sample1_lane2_R1.fastq.gz,data-test/test1/sample1_lane2_R2.fastq.gz
+P001,S001,WGS,,BAM,data-test/test1/sample1.bam,data-test/test1/sample1.bam.bai
+P001,S001,WGS,,GVCF,data-test/test1/sample1.gvcf,data-test/test1/sample1.gvcf.idx
+P001,S002,WXS,L001,FASTQ,data-test/test1/sample2_R1.fastq.gz,data-test/test1/sample2_R2.fastq.gz
+P001,S002,WXS,,BAM,data-test/test1/sample2.bam,data-test/test1/sample2.bam.bai
+P001,S002,WXS,,GVCF,data-test/test1/sample2.g.vcf,data-test/test1/sample2.g.vcf.idx
+P002,S003,WGS,L001,FASTQ,data-test/test1/sample3_R1.fastq.gz,data-test/test1/sample3_R2.fastq.gz
+P002,S003,WGS,,VCF,data-test/test1/sample3.vcf,data-test/test1/sample3.vcf.idx
+P003,S004,WGS,,VCF,data-test/test1/sample4.vcf,data-test/test1/sample4.vcf.idx
