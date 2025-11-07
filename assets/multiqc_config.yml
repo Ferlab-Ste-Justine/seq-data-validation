@@ -9,6 +9,53 @@ report_section_order:
   "Ferlab-Ste-Justine-seq-data-validation-summary":
     order: -1002
 
-export_plots: true
-
+no_ai: true
 disable_version_detection: true
+show_analysis_paths: False
+
+export_plots: true
+skip_generalstats: true
+
+remove_sections:
+  - Ferlab-Ste-Justine-seq-data-validation-methods-description
+
+run_modules:
+  - custom_content
+
+use_filename_as_sample_name: false
+
+custom_data:
+  file_integrity_report.json:
+    section_name: "File Integrity"
+    file_format: "json"
+    plot_type: "table"
+    headers:
+      "sample_id":
+        title: "Sample ID"
+      "fileType":
+        title: "File Type"
+      "status":
+        title: "Status"
+      "errors":
+        hidden: false
+      "experimentalStrategy":
+        title: "Strategy"
+        hidden: true
+      "full_path":
+        hidden: true
+      "index":
+        hidden: true
+      "pair":
+        hidden: true
+    pconfig:
+      id: "file_integrity_report"
+      title: "File Integrity Report"
+      col1_header: "File Name"
+      no_violin: true
+      only_defined_headers: false
+
+sp:
+  file_integrity_report.json:
+    fn: "file_integrity_report.json"
+
+fn_clean_sample_names: false

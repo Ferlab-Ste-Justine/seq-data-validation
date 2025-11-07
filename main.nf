@@ -13,6 +13,9 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 
+// Enable Nextflow preview features
+nextflow.preview.topic = true
+
 include { SEQ_DATA_VALIDATION  } from './workflows/seq_data_validation'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_seq_data_validation_pipeline'
 include { PIPELINE_COMPLETION     } from './subworkflows/local/utils_nfcore_seq_data_validation_pipeline'
