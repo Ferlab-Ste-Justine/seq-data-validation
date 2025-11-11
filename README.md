@@ -1,17 +1,12 @@
 # Ferlab-Ste-Justine/seq-data-validation
 
 [![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
-
 [![Nextflow](https://img.shields.io/badge/version-%E2%89%A524.10.2-green?style=flat&logo=nextflow&logoColor=white&color=%230DC09D&link=https%3A%2F%2Fnextflow.io)](https://www.nextflow.io/)
 [![nf-core template version](https://img.shields.io/badge/nf--core_template-3.3.2-green?style=flat&logo=nfcore&logoColor=white&color=%2324B064&link=https%3A%2F%2Fnf-co.re)](https://github.com/nf-core/tools/releases/tag/3.3.2)
-[![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
-[![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
-[![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/Ferlab-Ste-Justine/seq-data-validation)
 
 ## Introduction
 
-**Ferlab-Ste-Justine/seq-data-validation** is a bioinformatics pipeline that ...
+**Ferlab-Ste-Justine/seq-data-validation** is a bioinformatics pipeline that validates the integrity and format of sequencing data files including FASTQ, BAM/CRAM, and VCF/GVCF files. It performs a series of checks to ensure that the files are not corrupted, conform to expected formats, and (optionally) contain valid variant information. The pipeline generates a comprehensive report summarizing the validation results for each file.
 
 <!-- TODO nf-core:
    Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
@@ -19,40 +14,56 @@
    to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
 -->
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/guidelines/graphic_design/workflow_diagrams#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+## Pipeline Summary
+
+The pipeline consists of three streams to validate different types of sequencing data:
+
+- **FASTQ** - Verify fastq integrity and matching pairs (if PE) with `fq lint` and `seqfu check`.
+- **BAM/CRAM** - Validate file integrity, format, checks reference, validate index, and diagnose erros with `samtools quickcheck` and `picard validateSamFile`.
+- **GVCF/VCF** - Validate integrity, format, and (optionally) variants with `gatk4 validateVariants`.
+
+It accepts a mixed input of FASTQ, BAM/CRAM, and VCF/GVCF files and internally separates the files by data type, running the relevant stream.
+
+At the end, it produces a report summarising the status (PASS/FAIL) of each submitted data file and index, visualized with MultiQC.
+
+![DataValidationDiagram](docs/images/Ferlab-seq-data-validation.drawio.png)
+
+This schema was done using [draw.io](https://app.diagrams.net/) with the good pratices recommended by the nf-core community. See [nf-core Graphic Design](https://nf-co.re/docs/guidelines/graphic_design).
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
-
 First, prepare a samplesheet with your input data that looks as follows:
 
 `samplesheet.csv`:
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+participant,sample,strategy,lane,fileType,file1,file2
+P001,S001,WGS,L001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
+P001,S001,WGS,,BAM,sample1.bam,sample1.bam.bai
+P001,S001,WGS,,GVCF,sample1.gvcf,sample1.gvcf.idx
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+Each row represents a data file or a pair of files (FASTQ pairs or data file and its index). The `fileType` column indicates the type of data (FASTQ, BAM, CRAM, VCF, GVCF). The `file1` and `file2` columns contain the paths to the data files. For single-end FASTQ files or data files without an index, leave the `file2` column empty.
 
--->
+Now, you can run the pipeline:
 
-Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
+Locally using the test profile with Docker:
 
 ```bash
-nextflow run Ferlab-Ste-Justine/seq-data-validation \
-   -profile <docker/singularity/.../institute> \
-   --input samplesheet.csv \
-   --outdir <OUTDIR>
+nextflow run . -profile test,docker --outdir <OUTDIR>
+```
+
+In a production environment with a specific configuration and parameters:
+
+```bash
+nextflow -c app.config run Ferlab-Ste-Justine/seq-data-validation \
+    -r v1.0.0 \
+    --input samplesheet.csv \
+    --outdir <OUTDIR> \
+    -params-file params.json
 ```
 
 > [!WARNING]
@@ -60,9 +71,9 @@ nextflow run Ferlab-Ste-Justine/seq-data-validation \
 
 ## Credits
 
-Ferlab-Ste-Justine/seq-data-validation was originally written by Georgette Femerling.
+Ferlab-Ste-Justine/seq-data-validation was originally written by Georgette Femerling, Samantha Yuen, Félix-Antoine Le Sieur, Lysiane Bouchard, David Morais.
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+We thank the Ferlab team and its partners for their support and collaboration in the development of this pipeline.
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
@@ -74,8 +85,6 @@ If you would like to contribute to this pipeline, please see the [contributing g
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
 <!-- If you use Ferlab-Ste-Justine/seq-data-validation for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
-
-<!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 
 An extensive list of references for the tools used by the pipeline can be found in the [`CITATIONS.md`](CITATIONS.md) file.
 
