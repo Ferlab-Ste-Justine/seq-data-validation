@@ -50,7 +50,6 @@ lint:
     - .github/ISSUE_TEMPLATE/feature_request.yml
     - .github/workflows/branch.yml
     - .github/workflows/linting_comment.yml
-  included_configs: false
 
 template:
   org: Ferlab-Ste-Justine

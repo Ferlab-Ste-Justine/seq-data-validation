@@ -120,5 +120,25 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "fasta": {
+            "type": "string"
+        },
+        "fai": {
+            "type": "string"
+        },
+        "fasta_dict": {
+            "type": "string"
+        },
+        "dbsnp": {
+            "type": "string"
+        },
+        "regions_bed": {
+            "type": "string"
+        },
+        "publish_all": {
+            "type": "boolean"
+        }
+    }
 }
