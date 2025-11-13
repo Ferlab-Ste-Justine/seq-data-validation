@@ -4,49 +4,58 @@
 
 ## Introduction
 
-<!-- TODO nf-core: Add documentation about anything specific to running your pipeline. For general topics, please point to (and add to) the main nf-core website. -->
-
 ## Samplesheet input
 
-You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with 3 columns, and a header row as shown in the examples below.
+You will need to create a samplesheet with information about the samples you would like to analyse before running the pipeline. Use this parameter to specify its location. It has to be a comma-separated file with at least 4 columns, and a header row as shown in the examples below.
 
 ```bash
 --input '[path to samplesheet file]'
 ```
 
-### Multiple runs of the same sample
+### Minimal samplesheet
 
-The `sample` identifiers have to be the same when you have re-sequenced the same sample more than once e.g. to increase sequencing depth. The pipeline will concatenate the raw reads before performing any downstream analysis. Below is an example for the same sample sequenced across 3 lanes:
+The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 4 columns to match those defined in the table below.
+Below is an example for a minimal samplesheet containing a single paired-end FASTQ file, a BAM file with its index, and a GVCF file with its index.
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L003_R1_001.fastq.gz,AEG588A1_S1_L003_R2_001.fastq.gz
-CONTROL_REP1,AEG588A1_S1_L004_R1_001.fastq.gz,AEG588A1_S1_L004_R2_001.fastq.gz
+participant,sample,file1,file2
+P001,S001,sample1_R1.fastq.gz,sample1_R2.fastq.gz
+P001,S001,sample1.bam,sample1.bam.bai
+P001,S001,sample1.gvcf,sample1.gvcf.tbi
 ```
 
 ### Full samplesheet
 
-The pipeline will auto-detect whether a sample is single- or paired-end using the information provided in the samplesheet. The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns to match those defined in the table below.
+The pipeline can auto-detect the `fileType` from the file name, but it is recommended to provide it. Similarly for alignment and variant files, the pipeline can search for the index file, assuming it is located in the same path and has the same name as the data file + relevant suffix.
 
-A final samplesheet file consisting of both single- and paired-end data may look something like the one below. This is for 6 samples, where `TREATMENT_REP3` has been sequenced twice.
+If the data consists of paired-end raw reads, both files **must** be provided.
+
+A final samplesheet file consisting of mixed data types may look something like the one below:
 
 ```csv title="samplesheet.csv"
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
-CONTROL_REP2,AEG588A2_S2_L002_R1_001.fastq.gz,AEG588A2_S2_L002_R2_001.fastq.gz
-CONTROL_REP3,AEG588A3_S3_L002_R1_001.fastq.gz,AEG588A3_S3_L002_R2_001.fastq.gz
-TREATMENT_REP1,AEG588A4_S4_L003_R1_001.fastq.gz,
-TREATMENT_REP2,AEG588A5_S5_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L003_R1_001.fastq.gz,
-TREATMENT_REP3,AEG588A6_S6_L004_R1_001.fastq.gz,
+participant,sample,strategy,lane,fileType,file1,file2
+P001,S001,WGS,L001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
+P001,S001,WGS,,BAM,sample1.bam,sample1.bam.bai
+P001,S001,WGS,,GVCF,sample1.gvcf,sample1.gvcf.tbi
+P002,S002,WXS,L001,FASTQ,sample2_R1.fastq.gz,sample2_R2.fastq.gz
+P002,S002,WXS,L002,FASTQ,sample2_R1_L2.fastq.gz,sample2_R2_L2.fastq.gz
+P002,S002,WXS,,CRAM,sample2.cram,
+P002,S002,WXS,,VCF,sample2.cnv.vcf.gz,
+P002,S002,WXS,,GVCF,sample2.gvcf.gz,
 ```
 
-| Column    | Description                                                                                                                                                                            |
-| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `sample`  | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). |
-| `fastq_1` | Full path to FastQ file for Illumina short reads 1. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
-| `fastq_2` | Full path to FastQ file for Illumina short reads 2. File has to be gzipped and have the extension ".fastq.gz" or ".fq.gz".                                                             |
+| Column          | Description                                                                                                                                                                                                                                        |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `participant`\* | Unique identifier for the participant. This entry will be identical for all samples from the same participant. Spaces in participant names are automatically converted to underscores (`_`).                                                       |
+| `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`).                                                             |
+| `strategy`\*    | Sequencing strategy used for the sample (e.g., WGS, WXS, RNA-Seq). This information can be useful for downstream analyses and reporting.                                                                                                           |
+| `lane`          | Identifier for the sequencing lane. This entry can be left empty if not applicable.                                                                                                                                                                |
+| `runId`         | Identifier for the sequencing run. This entry can be left empty if not applicable.                                                                                                                                                                 |
+| `fileType`      | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix. |
+| `file1`\*       | Full path to the primary data file. For FASTQ files, this is the first read in paired-end data or the single read in single-end data. For other file types, this is the data file itself.                                                          |
+| `file2`         | Full path to the secondary data file. For paired-end FASTQ files, this is the second read. For other file types this is the index file; if empty, the pipeline will assume index files are located in the same directory as the primary data file. |
+
+**\*** Indicates required columns.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 

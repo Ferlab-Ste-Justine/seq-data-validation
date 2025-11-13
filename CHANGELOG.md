@@ -19,6 +19,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Dependencies`
 
+- [#9](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/9) Update documentation
+
 - [#7](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/7) Updated samplesheet and parsing
 
 ### `Deprecated`

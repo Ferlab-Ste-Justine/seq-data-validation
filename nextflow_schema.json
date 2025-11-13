@@ -29,12 +29,57 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "publish_all": {
+                    "type": "boolean",
+                    "description": "Whether to publish the output of each process."
+                },
                 "multiqc_title": {
                     "type": "string",
                     "description": "MultiQC report title. Printed as page header, used for filename if not otherwise specified.",
                     "fa_icon": "fas fa-file-signature"
                 }
             }
+        },
+        "references": {
+            "title": "References",
+            "type": "object",
+            "description": "Define reference files",
+            "default": "",
+            "properties": {
+                "fasta": {
+                    "type": "string",
+                    "description": "The reference genome FASTA file",
+                    "pattern": "^.*\\.fasta$",
+                    "format": "file-path"
+                },
+                "fai": {
+                    "type": "string",
+                    "description": "The reference genome FASTA index.",
+                    "pattern": "^.*\\.fai$",
+                    "format": "file-path",
+                    "help_text": "If empty, Its location will be automatically derived by appending '.fai' to the fasta parameter."
+                },
+                "fasta_dict": {
+                    "type": "string",
+                    "description": "The reference genome dictionary file.",
+                    "pattern": "^.*\\.dict$",
+                    "format": "file-path",
+                    "help_text": "If empty, its location will be automatically derived by replacing the .fasta file extension of the fasta parameter with .dict."
+                },
+                "dbsnp": {
+                    "type": "string",
+                    "description": "Path to a the DBSNP reference data file",
+                    "pattern": "^.*\\.vcf(\\.gz)$",
+                    "format": "file-path"
+                },
+                "regions_bed": {
+                    "type": "string",
+                    "description": "If specified, the given interval file will be used to define the genomic interval(s) over which we operate (WES, WGS or targeted sequencing).",
+                    "pattern": "^.*\\.bed$",
+                    "format": "file-path"
+                }
+            },
+            "fa_icon": "fas fa-book-open"
         },
         "generic_options": {
             "title": "Generic options",
@@ -118,27 +163,10 @@
             "$ref": "#/$defs/input_output_options"
         },
         {
+            "$ref": "#/$defs/references"
+        },
+        {
             "$ref": "#/$defs/generic_options"
         }
-    ],
-    "properties": {
-        "fasta": {
-            "type": "string"
-        },
-        "fai": {
-            "type": "string"
-        },
-        "fasta_dict": {
-            "type": "string"
-        },
-        "dbsnp": {
-            "type": "string"
-        },
-        "regions_bed": {
-            "type": "string"
-        },
-        "publish_all": {
-            "type": "boolean"
-        }
-    }
+    ]
 }

@@ -55,7 +55,7 @@ template:
   org: Ferlab-Ste-Justine
   name: seq-data-validation
   description: Pipeline to validate the integrity of sequencing data files
-  author: Georgette Femerling, Félix-Antoine Le Sieur, Samantha Yue, Lysian Bouchard, David Morais
+  author: Georgette Femerling, Félix-Antoine Le Sieur, Samantha Yuen, Lysian Bouchard, David Morais
   version: 1.0.0dev
   force: true
   outdir: .
