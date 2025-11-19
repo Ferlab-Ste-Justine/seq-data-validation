@@ -21,10 +21,10 @@ process SEQFU_CHECK {
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    paste <(echo ${meta.id}) <(seqfu \\
+    seqfu \\
         check \\
         $args \\
-        $fastq) > ${prefix}.check.tsv
+        $fastq > ${prefix}.check.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

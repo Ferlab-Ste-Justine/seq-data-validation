@@ -1,6 +1,6 @@
 process SAMTOOLS_QUICKCHECK {
     tag "$meta.id"
-    label 'process_low'
+    label 'process_single'
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
@@ -42,9 +42,8 @@ process SAMTOOLS_QUICKCHECK {
     stub:
     def args = task.ext.args ?: ''
     def prefix = task.ext.prefix ?: "${meta.id}"
-    def file_type = input.getExtension()
     """
-    touch ${prefix}.samtools_quickcheck.status.yml
+    touch ${prefix}.quickcheck.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

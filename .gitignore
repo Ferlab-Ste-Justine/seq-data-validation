@@ -12,3 +12,5 @@ data-test/
 **/.nf-test.log
 **/.nf-test/tests/**
 **/.devcontainer/**
+.nf-test/
+.nf-test*
