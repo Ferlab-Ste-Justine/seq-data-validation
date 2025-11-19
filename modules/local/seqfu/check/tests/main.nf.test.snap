@@ -1,0 +1,86 @@
+{
+    "test_seqfu_success": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.check.tsv:md5,c3e6eae028f23041bd09cac9c371f318"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,68acb41f0d0333843fd5d1b0c7256fd1"
+                ],
+                "check": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.check.tsv:md5,c3e6eae028f23041bd09cac9c371f318"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.10.2"
+        },
+        "timestamp": "2025-11-19T21:04:01.294288367"
+    },
+    "test_seqfu_fail - Safe exit": {
+        "content": [
+            {
+                "0": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.check.tsv:md5,ac743d37c6b8f22c7066ae7e60f966db"
+                    ]
+                ],
+                "1": [
+                    "versions.yml:md5,68acb41f0d0333843fd5d1b0c7256fd1"
+                ],
+                "check": [
+                    [
+                        {
+                            "id": "test",
+                            "single_end": false
+                        },
+                        "test.check.tsv:md5,ac743d37c6b8f22c7066ae7e60f966db"
+                    ]
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.10.2"
+        },
+        "timestamp": "2025-11-19T21:04:15.320625058"
+    },
+    "test_seqfu_fail": {
+        "content": [
+            {
+                "0": [
+                    
+                ],
+                "1": [
+                    
+                ],
+                "check": [
+                    
+                ]
+            }
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.10.2"
+        },
+        "timestamp": "2025-11-19T21:04:08.235434578"
+    }
+}

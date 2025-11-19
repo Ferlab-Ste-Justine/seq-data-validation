@@ -9,3 +9,5 @@ testing*
 null/
 data-test/
 .vscode/
+.nf-test/
+.nf-test*
