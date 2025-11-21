@@ -14,7 +14,6 @@ include { samplesheetToList         } from 'plugin/nf-schema'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SUBWORKFLOW TO INITIALISE PIPELINE
@@ -99,6 +98,22 @@ workflow PIPELINE_INITIALISATION {
             [ meta, [file1, file2] ]
         }
         .set { ch_samplesheet }
+
+    if (params.id_mapping) {
+        channel.fromPath(params.id_mapping).splitCsv(header:true)
+            .map { row -> [ row.newID, row.oldID ] }
+            .set { id_replace_map }
+        // channel.fromList(samplesheetToList(params.id_mapping, "${projectDir}/assets/schema_id_mapping.json"))
+            // .map { it -> [it.sample[0], it.old_id[0]] }
+
+        ch_samplesheet = ch_samplesheet
+            .map { meta, files -> [ meta.sample, [ meta , files ] ] }
+            .combine(id_replace_map, by: 0)
+            .map{ _sample, meta_files, old_id ->
+                def (meta, files) = meta_files
+                [meta + [old_id: old_id], files]
+            }
+    }
 
     emit:
     samplesheet = ch_samplesheet

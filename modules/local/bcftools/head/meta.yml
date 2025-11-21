@@ -1,0 +1,57 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/nf-core/modules/master/modules/meta-schema.json
+# # TODO nf-core: Add a description of the module and list keywords
+name: "bcftools_head"
+description: Displays header of a VCF/BCF file and optionally the first few variant records
+keywords:
+  - variant calling
+  - header
+  - head
+  - bcftools
+  - VCF
+tools:
+  - head:
+      description: "Display header of a VCF/BCF file"
+      homepage: http://samtools.github.io/bcftools/bcftools.html
+      documentation: http://www.htslib.org/doc/bcftools.html
+      doi: 10.1093/bioinformatics/btp352
+      licence: ["MIT"]
+      identifier: biotools:bcftools
+
+input:
+  - - meta:
+        type: map
+        description: Groovy Map containing sample information. e.g. `[
+          id:'sample1' ]`
+    - vcf:
+        type: file
+        description: VCF file
+        pattern: "*.{vcf,bcf}"
+        ontologies:
+          - edam: http://edamontology.org/data_3498 # Sequence variations
+          - edam: http://edamontology.org/format_3016 # VCF
+          - edam: http://edamontology.org/format_3020 # BCF
+output:
+  sequence_variations:
+    - - meta:
+          type: map
+          description: Groovy Map containing sample information. e.g. `[
+            id:'sample1' ]`
+      - "*.{vcf,bcf}":
+          type: file
+          description: sequence_variations file
+          pattern: "*.{vcf,bcf}"
+          ontologies:
+            - edam: http://edamontology.org/data_3498 # Sequence variations
+            - edam: http://edamontology.org/format_3016 # VCF
+            - edam: http://edamontology.org/format_3020 # BCF
+  versions:
+    - versions.yml:
+        type: file
+        description: File containing software versions
+        pattern: versions.yml
+        ontologies:
+          - edam: http://edamontology.org/format_3750 # YAML
+authors:
+  - "@georgette-femerling"
+maintainers:
+  - "@georgette-femerling"

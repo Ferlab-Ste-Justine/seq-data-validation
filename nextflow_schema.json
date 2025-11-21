@@ -168,5 +168,10 @@
         {
             "$ref": "#/$defs/generic_options"
         }
-    ]
+    ],
+    "properties": {
+        "id_mapping": {
+            "type": "string"
+        }
+    }
 }

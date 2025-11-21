@@ -1,0 +1,26 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://raw.githubusercontent.com/Ferlab-Ste-Justine/seq-data-validation/master/assets/schema_id_mapping.json",
+    "title": "Ferlab-Ste-Justine/seq-data-validation pipeline - params.id_mapping schema",
+    "description": "Schema for the file provided with params.id_mapping",
+    "type": "array",
+    "items": {
+        "type": "object",
+        "properties": {
+            "oldID": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "oldID must be provided and cannot contain spaces",
+                "meta": ["old_id"]
+            },
+            "newID": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "newID must be provided and cannot contain spaces",
+                "meta": ["sample"]
+            }
+        },
+        "required": ["oldID", "newID"],
+        "uniqueEntries": ["oldID", "newID"]
+    }
+}

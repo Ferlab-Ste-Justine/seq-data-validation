@@ -9,6 +9,8 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seq_data_validation_pipeline'
 
+include { VCF_ID_REPAIR  } from '../subworkflows/local/vcf_id_repair/main'
+include { BAM_ID_REPAIR  } from '../subworkflows/local/bam_id_repair/main'
 include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/main'
 include { VCF_FILE_INTEGRITY  } from '../subworkflows/local/vcf_file_integrity/main'
 include { FASTQ_FILE_INTEGRITY  } from '../subworkflows/local/fastq_file_integrity/main'
@@ -50,6 +52,16 @@ workflow SEQ_DATA_VALIDATION {
         }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Replace SampleID
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+    if (params.replace_sample_id)  {
+        VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
+        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
+    }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Validate file integrity and format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
@@ -58,10 +70,12 @@ workflow SEQ_DATA_VALIDATION {
     ch_versions = ch_versions.mix(FASTQ_FILE_INTEGRITY.out.versions)
     ch_integrity_reports = ch_integrity_reports.mix(FASTQ_FILE_INTEGRITY.out.reports)
 
-    BAM_FILE_INTEGRITY (ch_samplesheet_parsed.aln, ch_fasta, ch_fai, ch_dict)
+    ch_in_validation_aln = params.replace_sample_id ? BAM_ID_REPAIR.out.bam_bai : ch_samplesheet_parsed.aln
+    BAM_FILE_INTEGRITY (ch_in_validation_aln, ch_fasta, ch_fai, ch_dict)
     ch_integrity_reports = ch_integrity_reports.mix(BAM_FILE_INTEGRITY.out.reports)
 
-    VCF_FILE_INTEGRITY (ch_samplesheet_parsed.vcf, ch_intervals, ch_fasta, ch_fai, ch_dict, ch_dbsnp)
+    ch_in_validation_vcfs = params.replace_sample_id ? VCF_ID_REPAIR.out.vcf_tbi : ch_samplesheet_parsed.vcf
+    VCF_FILE_INTEGRITY (ch_in_validation_vcfs, ch_intervals, ch_fasta, ch_fai, ch_dict, ch_dbsnp)
     ch_integrity_reports = ch_integrity_reports.mix(VCF_FILE_INTEGRITY.out.reports)
 
     FILE_INTEGRITY_REPORT(ch_integrity_reports)
