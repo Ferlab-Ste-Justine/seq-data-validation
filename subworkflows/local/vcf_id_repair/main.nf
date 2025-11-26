@@ -1,9 +1,5 @@
-//
-// Workflow that checks if internal sampleID in VCF matches with sample_registration id and renames sampleid if not
-//
-include { BCFTOOLS_QUERY as BCFTOOLS_QUERY_SAMPLE     } from '../../../modules/nf-core/bcftools/query/main'
+include { PARSER_PARSEVCF as PARSE_VCF_HEADER } from '../../../modules/local/header_parser/parsevcf/main'
 include { BCFTOOLS_REHEADER    } from '../../../modules/nf-core/bcftools/reheader/main'
-include { BCFTOOLS_HEAD  } from '../../../modules/local/bcftools/head/main'
 
 workflow VCF_ID_REPAIR {
 
@@ -13,39 +9,30 @@ workflow VCF_ID_REPAIR {
     main:
     ch_versions = channel.empty()
 
-    BCFTOOLS_HEAD(ch_input)
+    // BCFTOOLS_HEAD(ch_input.map { meta, vcf, _tbi -> [ meta, vcf ] } )
+
+    // ch_vcf_header = BCFTOOLS_HEAD.out.header
+    //     .map { meta, header_vcf ->
+    //         [ meta, header_vcf, meta.old_id, meta.sample ]
+    //     }
 
     ch_vcf_header = ch_input
-        .join(BCFTOOLS_HEAD.out.header)
+        .map { meta, vcf, _tbi ->
+            [ meta, vcf, meta.old_id, meta.sample ]
+        }
 
-    BCFTOOLS_QUERY_SAMPLE(ch_input, [], [], []) // --list-samples in task.ext.args
-    branched_vcfs = ch_input
-        .join(BCFTOOLS_QUERY_SAMPLE.out.output)
-            .map{ meta, vcf, tbi, query_result ->
-                def sample_name = query_result.text.trim() // txt file with the result
-                [ meta, vcf, tbi, sample_name ]
-            }
-            .branch { meta, vcf, tbi, sample_name ->
-                reheader: (sample_name != meta.id)
-                direct: (sample_name == meta.id)
-            }
-    // create input to vcf reheader option --samples
-    ch_reheader_input =  branched_vcfs.reheader
-                            .map { meta, vcf, _tbi, sample_name ->
-                                def rename_tsv = file("${meta.id}_renameVCF.tsv")
-                                rename_tsv.text = "${sample_name}\t${meta.id}"
-                                [ meta, vcf , [], rename_tsv ]
-                            }
-    // Edit Sample ID in vcf
+    PARSE_VCF_HEADER(ch_vcf_header)
+
+    ch_reheader_input =  PARSE_VCF_HEADER.out.vcf_header
+        .map { meta, vcf, new_header ->
+            [ meta, vcf, new_header, [] ]
+        }
+
     BCFTOOLS_REHEADER(ch_reheader_input, [[:],[]])
     vcf_tbi = BCFTOOLS_REHEADER.out.vcf
                 .join(BCFTOOLS_REHEADER.out.index)
-                .mix( branched_vcfs.direct
-                        .map { meta, vcf, tbi, _sample_name ->
-                        [ meta, vcf, tbi ] } )
 
     // Gather versions of all tools used
-    ch_versions = ch_versions.mix(BCFTOOLS_QUERY_SAMPLE.out.versions.first())
     ch_versions = ch_versions.mix(BCFTOOLS_REHEADER.out.versions.first())
 
     emit:
