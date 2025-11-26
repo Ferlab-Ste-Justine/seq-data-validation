@@ -1,10 +1,11 @@
 //
 // Workflow that checks if internal sampleID in BAM/CRAM matches with sample_registration id and renames sampleid if not
 //
-include { SAMTOOLS_QUICKCHECK     } from '../../../modules/local/samtools/quickcheck/main'
 include { SAMTOOLS_SAMPLES     } from '../../../modules/local/samtools/samples/main'
+include { SAMTOOLS_SAMPLES as SAMTOOLS_SAMPLES_RGID } from '../../../modules/local/samtools/samples/main'
 include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/main'
 include { SAMTOOLS_REHEADER } from '../../../modules/local/samtools/reheader/main'
+include { PARSER_PARSEBAM  as PARSE_BAM_HEADER } from '../../../modules/local/header_parser/parsebam/main'
 
 workflow BAM_ID_REPAIR {
 
@@ -15,40 +16,39 @@ workflow BAM_ID_REPAIR {
     main:
     ch_versions = channel.empty()
 
-    // Quickly check input for EOF
-    SAMTOOLS_QUICKCHECK(ch_input)
+    // Get RGID from BAM/CRAM
+    SAMTOOLS_SAMPLES_RGID(ch_input, "ID", ch_fasta, [])
 
-    ch_input.join(SAMTOOLS_QUICKCHECK.out.txt)
-        .filter { meta, bam, bai, qc_txt ->
-            def qc_content = qc_txt.text
-            if (qc_content) {
-                log.warn "SAMTOOLS_QUICKCHECK found issues with file: ${bam}. Details:\n${qc_content}"
+    branched_bams = ch_input
+        .join(SAMTOOLS_SAMPLES_RGID.out.output)
+            .map{ meta, bam, bai, query_RGID ->
+                assert query_RGID.countLines() < 2 : 'More than one RGID in bam file'
+                def rgid = query_RGID.text.split().first()
+                // check if sample oldID is in rgid
+                def oldID_in_rg = rgid.contains(meta.old_id)
+                [ meta, bam, bai, rgid, oldID_in_rg ]
             }
-            return qc_content == ''
+            .view()
+            .branch { meta, bam, bai, rgid, oldID_in_rg ->
+                reheader: (rgid != meta.participant_sample) && params.skip_reheader == false
+                direct: (rgid == meta.participant_sample) || params.skip_reheader == true
+            }
+
+    ch_bam_header = ch_input
+        .map { meta, bam, _bai ->
+            [ meta, bam, meta.old_id, meta.sample ]
         }
-        .map { meta, bam, bai, qc_txt -> [ meta, bam, bai ] }
-        .set { ch_input_validated }
 
-    // Get sample names from BAM/CRAM
-    SAMTOOLS_SAMPLES(ch_input_validated, ch_fasta, [])
-
-    branched_bams = ch_input_validated
-        .join(SAMTOOLS_SAMPLES.out.output)
-            .map{ meta, bam, bai, query_result ->
-                assert query_result.countLines() < 2 : 'More than one sample in bam file'
-                def sample_name = query_result.text.split().first() // txt file with the result
-                [ meta, bam, bai, sample_name ]
-            }
-            .branch { meta, bam, bai, sample_name ->
-                reheader: (sample_name != meta.participant_sample) && params.skip_reheader == false
-                direct: (sample_name == meta.participant_sample) || params.skip_reheader == true
-            }
+    PARSE_BAM_HEADER(ch_bam_header)
 
     // create input to vcf reheader option --samples
-    ch_reheader_input =  branched_bams.reheader
-                            .map { meta, bam, _bai, _sample_name ->
-                                [ meta, bam ]
-                            }
+    ch_reheader_input =  ch_input
+        .join( PARSE_BAM_HEADER.out.header )
+        .map { meta, bam, _bai, new_bam_header ->
+            [ meta, bam, new_bam_header ]
+        }
+
+    // PARSE_BAM_HEADER.out.replace_rg.view()
 
     // Edit Sample ID and header in bam/cram
     SAMTOOLS_REHEADER(ch_reheader_input)
@@ -62,9 +62,9 @@ workflow BAM_ID_REPAIR {
 
     bam_bai = SAMTOOLS_REHEADER.out.bam
                 .join( index_ch )
-                .mix( branched_bams.direct
-                        .map { meta, bam, idx, _sample_name ->
-                        [ meta, bam, idx ] } )
+                // .mix( branched_bams.direct
+                //         .map { meta, bam, idx, _sample_name ->
+                //         [ meta, bam, idx ] } )
 
     // Gather versions of all tools used
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())

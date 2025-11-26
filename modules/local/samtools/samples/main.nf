@@ -4,11 +4,12 @@ process SAMTOOLS_SAMPLES {
 
     conda "${moduleDir}/environment.yml"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
-        'https://depot.galaxyproject.org/singularity/samtools:1.21--h96c455f_1':
-        'biocontainers/samtools:1.21--h96c455f_1' }"
+        'https://depot.galaxyproject.org/singularity/samtools:1.22.1--h96c455f_0' :
+        'biocontainers/samtools:1.22.1--h96c455f_0' }"
 
     input:
     tuple val(meta), path(input), path(idx) // channel: [ val(meta), path(bam/cram) ]
+    val(rgtag)
     path(fasta) // optional
     path(references_file) // optional
 
@@ -21,6 +22,7 @@ process SAMTOOLS_SAMPLES {
 
     script:
     def args = task.ext.args ?: ''
+    def tag_line = rgtag ? "-T ${rgtag}" : ""
     def prefix = task.ext.prefix ?: "${meta.id}"
     suffix = task.ext.suffix ?: "samples.txt"
     def reference_list_arg = references_file ? "-F ${references_file}" : ""
@@ -29,6 +31,7 @@ process SAMTOOLS_SAMPLES {
     samtools \\
         samples \\
         $args \\
+        $tag_line \\
         $reference_arg \\
         $reference_list_arg \\
         -o ${prefix}.${suffix} \\

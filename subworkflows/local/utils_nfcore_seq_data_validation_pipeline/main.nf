@@ -182,8 +182,10 @@ def inferFileTypeFromExtension(file) {
 def findIndex(fileType, dataFile) {
     def index = dataFile.toString() + (fileType in ["BAM","CRAM"] ? (fileType == "BAM" ? '.bai' : '.crai') : '.tbi')
     if(!file(index).exists()) {
-        error("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+        log.warn("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+        return []
     }
+    return file(index)
 }
 
 //

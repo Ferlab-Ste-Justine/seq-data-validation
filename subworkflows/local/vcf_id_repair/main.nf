@@ -9,13 +9,6 @@ workflow VCF_ID_REPAIR {
     main:
     ch_versions = channel.empty()
 
-    // BCFTOOLS_HEAD(ch_input.map { meta, vcf, _tbi -> [ meta, vcf ] } )
-
-    // ch_vcf_header = BCFTOOLS_HEAD.out.header
-    //     .map { meta, header_vcf ->
-    //         [ meta, header_vcf, meta.old_id, meta.sample ]
-    //     }
-
     ch_vcf_header = ch_input
         .map { meta, vcf, _tbi ->
             [ meta, vcf, meta.old_id, meta.sample ]

@@ -12,7 +12,6 @@ nextflow_workflow {
     tag "subworkflows/vcf_id_repair"
     // Tags for all modules used within this subworkflow.
     tag "bcftools"
-    tag "bcftools/query"
     tag "bcftools/reheader"
 
 

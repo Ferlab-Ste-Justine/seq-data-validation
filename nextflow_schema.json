@@ -172,6 +172,9 @@
     "properties": {
         "id_mapping": {
             "type": "string"
+        },
+        "replace_sample_id": {
+            "type": "boolean"
         }
     }
 }

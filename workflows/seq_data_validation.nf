@@ -57,7 +57,7 @@ workflow SEQ_DATA_VALIDATION {
 */
     if (params.replace_sample_id)  {
         VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
-        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
+        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln, ch_fasta )
     }
 
 /*

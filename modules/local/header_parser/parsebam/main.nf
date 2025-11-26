@@ -1,4 +1,4 @@
-process PARSER_PARSEVCF {
+process PARSER_PARSEBAM {
     tag "$meta.id"
     label 'process_single'
 
@@ -8,10 +8,11 @@ process PARSER_PARSEVCF {
         'biocontainers/pysam:0.23.3--py310h64e62c9_1' }"
 
     input:
-    tuple val(meta), path(vcf), val(oldID), val(newID)
+    tuple val(meta), path(bam), val(oldID), val(newID)
 
     output:
-    tuple val(meta), path(vcf), path("*.{vcf,txt}"), emit: vcf_header
+    tuple val(meta), path("*.{sam,txt}"), emit: header
+    // tuple val(meta), env("REPLACE_RG"), emit: replace_rg
     path "versions.yml"           , topic: versions
 
     when:
@@ -20,15 +21,15 @@ process PARSER_PARSEVCF {
     script:
     def prefix = task.ext.prefix ?: "${meta.id}"
     """
-    vcf_parse_header.py \\
-        --new_id $newID \\
-        --old_id $oldID \\
-        -o ${prefix}.new.header.vcf \\
-        $vcf
+    bam_parse_header.py \\
+        --new_id ${newID} \\
+        --old_id ${oldID} \\
+        -o ${prefix}.new.header.sam \\
+        $bam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vcf_parse_header.py: \$(vcf_parse_header.py --version)
+        bam_parse_header.py: \$(bam_parse_header.py --version)
     END_VERSIONS
     """
 
@@ -37,11 +38,11 @@ process PARSER_PARSEVCF {
     """
     echo $args
 
-    touch ${prefix}.new.header.vcf
+    touch ${prefix}.new.header.sam
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        vcf_parse_header.py: \$(vcf_parse_header.py --version)
+        bam_parse_header.py: \$(bam_parse_header.py --version)
     END_VERSIONS
     """
 }
