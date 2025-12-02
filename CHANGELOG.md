@@ -3,9 +3,11 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased - [07/11/25]
+## Unreleased - [02/12/25]
 
 ### `Added`
+
+- [#10](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/10) Add modules and workflows to replace sampleID in vcf and bam/cram and rename fastq files
 
 - [#8](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/6) Main workflow and generation of JSON report
 

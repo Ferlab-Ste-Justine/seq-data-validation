@@ -10,6 +10,10 @@
 
 ## Pipeline tools
 
+- [BCFtools](https://pubmed.ncbi.nlm.nih.gov/33590861/)
+
+  > Danecek P, Bonfield JK, Liddle J, Marshall J, Ohan V, Pollard MO, Whitwham A, Keane T, McCarthy SA, Davies RM, Li H. Twelve years of SAMtools and BCFtools. Gigascience. 2021 Feb 16;10(2):giab008. doi: 10.1093/gigascience/giab008. PMID: 33590861; PMCID: PMC7931819.
+
 - [Fq](https://github.com/stjude-rust-labs/fq)
 
 - [GATK](https://pubmed.ncbi.nlm.nih.gov/20644199/)
