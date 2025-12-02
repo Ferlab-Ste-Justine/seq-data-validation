@@ -11,8 +11,8 @@ process PARSER_PARSEBAM {
     tuple val(meta), path(bam), val(oldID), val(newID)
 
     output:
-    tuple val(meta), path("*.{sam,txt}"), emit: header
-    // tuple val(meta), env("REPLACE_RG"), emit: replace_rg
+    tuple val(meta), path("*.sam"), emit: header
+    tuple val(meta), path("*.rg_line.txt"), optional: true, emit: rg_line
     path "versions.yml"           , topic: versions
 
     when:
@@ -25,7 +25,8 @@ process PARSER_PARSEBAM {
         --new_id ${newID} \\
         --old_id ${oldID} \\
         -o ${prefix}.new.header.sam \\
-        $bam
+        --rg_output ${prefix}.rg_line.txt \\
+        $bam \\
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

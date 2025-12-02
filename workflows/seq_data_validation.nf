@@ -52,12 +52,12 @@ workflow SEQ_DATA_VALIDATION {
         }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-    Replace SampleID
+    Replace SampleID in BAM/CRAM and VCF/GVCF files
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
     if (params.replace_sample_id)  {
         VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
-        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln, ch_fasta )
+        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
     }
 
 /*

@@ -90,7 +90,6 @@ workflow PIPELINE_INITIALISATION {
             }
             else {
                 if (!file2) {
-                    log.info("Index file not provided for ${file1}. Attempting to infer index from file path.")
                     def index_file = findIndex(meta.fileType, file1)
                     return [ meta, [file1, index_file]]
                 }
@@ -182,7 +181,7 @@ def inferFileTypeFromExtension(file) {
 def findIndex(fileType, dataFile) {
     def index = dataFile.toString() + (fileType in ["BAM","CRAM"] ? (fileType == "BAM" ? '.bai' : '.crai') : '.tbi')
     if(!file(index).exists()) {
-        log.warn("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+        log.debug("Index file not found for file: ${dataFile}. Expected index at: ${index}")
         return []
     }
     return file(index)

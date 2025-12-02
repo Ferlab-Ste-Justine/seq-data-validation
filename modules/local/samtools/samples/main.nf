@@ -22,16 +22,16 @@ process SAMTOOLS_SAMPLES {
 
     script:
     def args = task.ext.args ?: ''
-    def tag_line = rgtag ? "-T ${rgtag}" : ""
     def prefix = task.ext.prefix ?: "${meta.id}"
     suffix = task.ext.suffix ?: "samples.txt"
+    def tag_arg = rgtag ? "-T ${rgtag}" : ""
     def reference_list_arg = references_file ? "-F ${references_file}" : ""
     def reference_arg = fasta ? "-f ${fasta}" : ""
     """
     samtools \\
         samples \\
         $args \\
-        $tag_line \\
+        $tag_arg \\
         $reference_arg \\
         $reference_list_arg \\
         -o ${prefix}.${suffix} \\
