@@ -99,11 +99,9 @@ workflow PIPELINE_INITIALISATION {
         .set { ch_samplesheet }
 
     if (params.id_mapping) {
-        channel.fromPath(params.id_mapping).splitCsv(header:true)
-            .map { row -> [ row.newID, row.oldID ] }
+        channel.fromList(samplesheetToList(params.id_mapping, "${projectDir}/assets/schema_id_mapping.json"))
+            .map { row -> [ row[0], row[1] ] }
             .set { id_replace_map }
-        // channel.fromList(samplesheetToList(params.id_mapping, "${projectDir}/assets/schema_id_mapping.json"))
-            // .map { it -> [it.sample[0], it.old_id[0]] }
 
         ch_samplesheet = ch_samplesheet
             .map { meta, files -> [ meta.sample, [ meta , files ] ] }

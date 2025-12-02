@@ -4,23 +4,21 @@
     "title": "Ferlab-Ste-Justine/seq-data-validation pipeline - params.id_mapping schema",
     "description": "Schema for the file provided with params.id_mapping",
     "type": "array",
+    "required": ["oldID", "newID"],
+    "allOf": [{ "uniqueEntries": ["oldID"] }, { "uniqueEntries": ["newID"] }, { "uniqueEntries": ["oldID", "newID"] }],
     "items": {
         "type": "object",
         "properties": {
-            "oldID": {
-                "type": "string",
-                "pattern": "^\\S+$",
-                "errorMessage": "oldID must be provided and cannot contain spaces",
-                "meta": ["old_id"]
-            },
             "newID": {
                 "type": "string",
                 "pattern": "^\\S+$",
-                "errorMessage": "newID must be provided and cannot contain spaces",
-                "meta": ["sample"]
+                "errorMessage": "newID must be provided and cannot contain spaces"
+            },
+            "oldID": {
+                "type": "string",
+                "pattern": "^\\S+$",
+                "errorMessage": "oldID must be provided and cannot contain spaces"
             }
-        },
-        "required": ["oldID", "newID"],
-        "uniqueEntries": ["oldID", "newID"]
+        }
     }
 }
