@@ -9,7 +9,7 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seq_data_validation_pipeline'
 
-include { RENAME_FASTQ  } from '../modules/local/rename_fastq'
+include { RENAME_FASTQ  } from '../modules/local/rename_fastq/main'
 include { VCF_ID_REPAIR  } from '../subworkflows/local/vcf_id_repair/main'
 include { BAM_ID_REPAIR  } from '../subworkflows/local/bam_id_repair/main'
 include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/main'
@@ -62,18 +62,7 @@ workflow SEQ_DATA_VALIDATION {
         Handle FASTQ files
         ------
         */
-
-        // Dummy process to publish fastq with new names
         RENAME_FASTQ ( ch_samplesheet_parsed.fastq )
-        // Rename staged files so that downstream processes use the new names
-        renamed_fastq_files = RENAME_FASTQ.out.fastq_old
-            .map { meta, fastq_files ->
-                def new_fastq_files = fastq_files.collect { it ->
-                    def new_file = it.toUriString().replace("${meta.old_id}", "${meta.sample}")
-                    it.moveTo(new_file)
-                }
-                [meta, new_fastq_files]
-            }
 
         /*
         -------
@@ -97,7 +86,7 @@ workflow SEQ_DATA_VALIDATION {
     Validate file integrity and format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-    ch_in_validation_fq = params.replace_sample_id ? renamed_fastq_files : ch_samplesheet_parsed.fastq
+    ch_in_validation_fq = params.replace_sample_id ? RENAME_FASTQ.out.fastq : ch_samplesheet_parsed.fastq
     FASTQ_FILE_INTEGRITY (ch_in_validation_fq)
     ch_versions = ch_versions.mix(FASTQ_FILE_INTEGRITY.out.versions)
 
