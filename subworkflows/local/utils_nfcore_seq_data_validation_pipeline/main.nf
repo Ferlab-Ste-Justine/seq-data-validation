@@ -14,7 +14,6 @@ include { samplesheetToList         } from 'plugin/nf-schema'
 include { completionSummary         } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NFCORE_PIPELINE     } from '../../nf-core/utils_nfcore_pipeline'
 include { UTILS_NEXTFLOW_PIPELINE   } from '../../nf-core/utils_nextflow_pipeline'
-
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     SUBWORKFLOW TO INITIALISE PIPELINE
@@ -91,7 +90,6 @@ workflow PIPELINE_INITIALISATION {
             }
             else {
                 if (!file2) {
-                    log.info("Index file not provided for ${file1}. Attempting to infer index from file path.")
                     def index_file = findIndex(meta.fileType, file1)
                     return [ meta, [file1, index_file]]
                 }
@@ -99,6 +97,20 @@ workflow PIPELINE_INITIALISATION {
             [ meta, [file1, file2] ]
         }
         .set { ch_samplesheet }
+
+    if (params.id_mapping) {
+        channel.fromList(samplesheetToList(params.id_mapping, "${projectDir}/assets/schema_id_mapping.json"))
+            .map { row -> [ row[0], row[1] ] }
+            .set { id_replace_map }
+
+        ch_samplesheet = ch_samplesheet
+            .map { meta, files -> [ meta.sample, [ meta , files ] ] }
+            .combine(id_replace_map, by: 0)
+            .map{ _sample, meta_files, old_id ->
+                def (meta, files) = meta_files
+                [meta + [old_id: old_id], files]
+            }
+    }
 
     emit:
     samplesheet = ch_samplesheet
@@ -167,8 +179,10 @@ def inferFileTypeFromExtension(file) {
 def findIndex(fileType, dataFile) {
     def index = dataFile.toString() + (fileType in ["BAM","CRAM"] ? (fileType == "BAM" ? '.bai' : '.crai') : '.tbi')
     if(!file(index).exists()) {
-        error("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+        log.debug("Index file not found for file: ${dataFile}. Expected index at: ${index}")
+        return []
     }
+    return file(index)
 }
 
 //

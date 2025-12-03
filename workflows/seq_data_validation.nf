@@ -9,6 +9,9 @@ include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pi
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seq_data_validation_pipeline'
 
+include { RENAME_FASTQ  } from '../modules/local/rename_fastq/main'
+include { VCF_ID_REPAIR  } from '../subworkflows/local/vcf_id_repair/main'
+include { BAM_ID_REPAIR  } from '../subworkflows/local/bam_id_repair/main'
 include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/main'
 include { VCF_FILE_INTEGRITY  } from '../subworkflows/local/vcf_file_integrity/main'
 include { FASTQ_FILE_INTEGRITY  } from '../subworkflows/local/fastq_file_integrity/main'
@@ -50,19 +53,53 @@ workflow SEQ_DATA_VALIDATION {
         }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    Replace SampleID in BAM/CRAM and VCF/GVCF files
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+    if (params.replace_sample_id)  {
+        /*
+        -------
+        Handle FASTQ files
+        ------
+        */
+        RENAME_FASTQ ( ch_samplesheet_parsed.fastq )
+
+        /*
+        -------
+        Handle VCF files
+        ------
+        */
+        VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
+        ch_versions = ch_versions.mix(VCF_ID_REPAIR.out.versions)
+
+        /*
+        -------
+        Handle BAM/CRAM files
+        ------
+        */
+        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
+        ch_versions = ch_versions.mix(BAM_ID_REPAIR.out.versions)
+    }
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Validate file integrity and format
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-    FASTQ_FILE_INTEGRITY (ch_samplesheet_parsed.fastq)
+    ch_in_validation_fq = params.replace_sample_id ? RENAME_FASTQ.out.fastq : ch_samplesheet_parsed.fastq
+    FASTQ_FILE_INTEGRITY (ch_in_validation_fq)
     ch_versions = ch_versions.mix(FASTQ_FILE_INTEGRITY.out.versions)
-    ch_integrity_reports = ch_integrity_reports.mix(FASTQ_FILE_INTEGRITY.out.reports)
 
-    BAM_FILE_INTEGRITY (ch_samplesheet_parsed.aln, ch_fasta, ch_fai, ch_dict)
-    ch_integrity_reports = ch_integrity_reports.mix(BAM_FILE_INTEGRITY.out.reports)
+    ch_in_validation_aln = params.replace_sample_id ? BAM_ID_REPAIR.out.bam_bai : ch_samplesheet_parsed.aln
+    BAM_FILE_INTEGRITY (ch_in_validation_aln, ch_fasta, ch_fai, ch_dict)
 
-    VCF_FILE_INTEGRITY (ch_samplesheet_parsed.vcf, ch_intervals, ch_fasta, ch_fai, ch_dict, ch_dbsnp)
-    ch_integrity_reports = ch_integrity_reports.mix(VCF_FILE_INTEGRITY.out.reports)
+    ch_in_validation_vcfs = params.replace_sample_id ? VCF_ID_REPAIR.out.vcf_tbi : ch_samplesheet_parsed.vcf
+    VCF_FILE_INTEGRITY (ch_in_validation_vcfs, ch_intervals, ch_fasta, ch_fai, ch_dict, ch_dbsnp)
+
+    ch_integrity_reports = ch_integrity_reports
+        .mix(FASTQ_FILE_INTEGRITY.out.reports)
+        .mix(BAM_FILE_INTEGRITY.out.reports)
+        .mix(VCF_FILE_INTEGRITY.out.reports)
 
     FILE_INTEGRITY_REPORT(ch_integrity_reports)
 
@@ -130,6 +167,7 @@ workflow SEQ_DATA_VALIDATION {
 
     emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
+
 
 }
 

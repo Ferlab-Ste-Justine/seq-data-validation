@@ -5,6 +5,27 @@
     "description": "Pipeline to validate the integrity of sequencing data files",
     "type": "object",
     "$defs": {
+        "replace_id_options": {
+            "title": "Replace ID options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "replace_sample_id": {
+                    "type": "boolean",
+                    "description": "Run the tools to replace sample IDs with new IDs in all input files."
+                },
+                "id_mapping": {
+                    "type": "string",
+                    "format": "file-path",
+                    "schema": "/assets/schema_id_mapping.json",
+                    "mimetype": "text/csv",
+                    "description": "Path to comma-separated file containing the correspondance between oldID to newID. Required if `replace_sample_id` == true",
+                    "help_text": "Format:\noldID,newID\nsampleA,S001\nsampleB,S002\nsampleC,S003"
+                }
+            },
+            "required": ["replace_sample_id"]
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -50,7 +71,8 @@
                     "type": "string",
                     "description": "The reference genome FASTA file",
                     "pattern": "^.*\\.fasta$",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "help_text": ""
                 },
                 "fai": {
                     "type": "string",
@@ -133,7 +155,8 @@
                 "multiqc_methods_description": {
                     "type": "string",
                     "description": "Custom MultiQC yaml file containing HTML including a methods description.",
-                    "fa_icon": "fas fa-cog"
+                    "fa_icon": "fas fa-cog",
+                    "hidden": true
                 },
                 "validate_params": {
                     "type": "boolean",
@@ -159,6 +182,9 @@
         }
     },
     "allOf": [
+        {
+            "$ref": "#/$defs/replace_id_options"
+        },
         {
             "$ref": "#/$defs/input_output_options"
         },

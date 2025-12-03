@@ -1,4 +1,10 @@
 #!/usr/bin/env nextflow
+
+// Enable Nextflow preview features
+nextflow.preview.topic = true
+// Enable module binaries
+nextflow.enable.moduleBinaries = true
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Ferlab-Ste-Justine/seq-data-validation
@@ -12,9 +18,6 @@
     IMPORT FUNCTIONS / MODULES / SUBWORKFLOWS / WORKFLOWS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-
-// Enable Nextflow preview features
-nextflow.preview.topic = true
 
 include { SEQ_DATA_VALIDATION  } from './workflows/seq_data_validation'
 include { PIPELINE_INITIALISATION } from './subworkflows/local/utils_nfcore_seq_data_validation_pipeline'

@@ -9,3 +9,6 @@ testing*
 null/
 data-test/
 .vscode/
+**/.nf-test.log
+**/.nf-test/tests/**
+**/.devcontainer/**
