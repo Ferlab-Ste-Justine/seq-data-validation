@@ -12,6 +12,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seq_
 include { RENAME_FASTQ  } from '../modules/local/rename_fastq/main'
 include { VCF_ID_REPAIR  } from '../subworkflows/local/vcf_id_repair/main'
 include { BAM_ID_REPAIR  } from '../subworkflows/local/bam_id_repair/main'
+include { MD5SUM  } from '../modules/nf-core/md5sum/main'
 include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/main'
 include { VCF_FILE_INTEGRITY  } from '../subworkflows/local/vcf_file_integrity/main'
 include { FASTQ_FILE_INTEGRITY  } from '../subworkflows/local/fastq_file_integrity/main'
@@ -63,6 +64,10 @@ workflow SEQ_DATA_VALIDATION {
         ------
         */
         RENAME_FASTQ ( ch_samplesheet_parsed.fastq )
+        MD5SUM ( RENAME_FASTQ.out.fastq
+            .collect{ _meta, files -> files }
+            .map { files -> [ [id: 'fastq'], files ] }, false)
+        ch_versions = ch_versions.mix(MD5SUM.out.versions)
 
         /*
         -------
@@ -79,6 +84,7 @@ workflow SEQ_DATA_VALIDATION {
         */
         BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
         ch_versions = ch_versions.mix(BAM_ID_REPAIR.out.versions)
+
     }
 
 /*
