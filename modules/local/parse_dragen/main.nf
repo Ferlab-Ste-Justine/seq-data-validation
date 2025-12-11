@@ -8,11 +8,12 @@ process PARSE_DRAGEN {
         'biocontainers/python:3.9--1' }"
 
     input:
-    tuple val(meta), val(types), path(files, stageAs: "inputs/*"), val(oldID), val(newID)
+    tuple val(meta), val(types), path(files, stageAs: "inputs/*", arity:'1..*'), val(oldID), val(newID)
 
     output:
     tuple val(meta), path("${prefix}/**", type: "file"), emit: out_files
     tuple val(meta), path("file_manifest.tsv"), emit: manifest
+    tuple val(meta), path("unprocessed_files.txt"), emit: unprocessed_files
     path "versions.yml"       , topic: versions
 
     when:
@@ -20,7 +21,7 @@ process PARSE_DRAGEN {
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
-    def file_list = files.collect{ it.getName() }.join(' ')
+    def file_list = files.join(' ')
     def types_list = types.join(' ')
     """
     parse_dragen_files.py \\
