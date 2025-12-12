@@ -12,6 +12,7 @@ include { methodsDescriptionText } from '../subworkflows/local/utils_nfcore_seq_
 include { RENAME_FASTQ  } from '../modules/local/rename_fastq/main'
 include { VCF_ID_REPAIR  } from '../subworkflows/local/vcf_id_repair/main'
 include { BAM_ID_REPAIR  } from '../subworkflows/local/bam_id_repair/main'
+include { PARSE_DRAGEN  } from '../modules/local/parse_dragen/main'
 include { MD5SUM  } from '../modules/nf-core/md5sum/main'
 include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/main'
 include { VCF_FILE_INTEGRITY  } from '../subworkflows/local/vcf_file_integrity/main'
@@ -51,6 +52,8 @@ workflow SEQ_DATA_VALIDATION {
             [ meta - meta.subMap('lane','runId'), files[0], files[1] ]
         vcf:   meta.fileType in ["VCF","GVCF"]
             [ meta - meta.subMap('lane','runId'), files[0], files[1] ]
+        remainder: true
+            return [ meta - meta.subMap('count','lane','runId'), files[0] ]
         }
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -61,7 +64,7 @@ workflow SEQ_DATA_VALIDATION {
         /*
         -------
         Handle FASTQ files
-        ------
+        -------
         */
         RENAME_FASTQ ( ch_samplesheet_parsed.fastq )
         MD5SUM ( RENAME_FASTQ.out.fastq
@@ -85,6 +88,24 @@ workflow SEQ_DATA_VALIDATION {
         BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
         ch_versions = ch_versions.mix(BAM_ID_REPAIR.out.versions)
 
+        /*
+        -------
+        Handle other files (e.g., metrics, logs, tsv, csv files)
+        ------
+        */
+
+        // group by sample
+        ch_other_files = ch_samplesheet_parsed.remainder
+            .map { meta, file ->
+                [meta - meta.subMap('fileType'), meta.fileType, file] }
+            .groupTuple()
+            .map { meta, types_list, files ->
+                def oldID = meta.old_id
+                def newID = meta.sample
+                tuple( meta, types_list, files, oldID, newID )
+            }
+
+        PARSE_DRAGEN( ch_other_files )
     }
 
 /*

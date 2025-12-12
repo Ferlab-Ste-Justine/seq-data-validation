@@ -9,13 +9,13 @@
         "properties": {
             "participant": {
                 "type": "string",
-                "pattern": "^\\S+$",
+                "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "participant ID must be provided and cannot contain spaces",
                 "meta": ["participant"]
             },
             "sample": {
                 "type": "string",
-                "pattern": "^\\S+$",
+                "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "Sample ID must be provided and cannot contain spaces",
                 "meta": ["id", "sample"]
             },
@@ -44,16 +44,41 @@
                 "pattern": "^\\S+$",
                 "meta": ["runId"]
             },
-            "fileType": {
+            "file_type": {
                 "errorMessage": "File type must be one of: fastq, bam, cram, gvcf. Defaults to fastq, if none is supplied.",
                 "meta": ["fileType"],
                 "type": "string",
-                "enum": ["FASTQ", "BAM", "CRAM", "GVCF", "VCF"]
+                "enum": [
+                    "GVCF",
+                    "BAM",
+                    "BAI",
+                    "CSI",
+                    "CRAM",
+                    "CRAI",
+                    "CSV",
+                    "FAM",
+                    "FASTQ",
+                    "HTML",
+                    "MD5",
+                    "PED",
+                    "SAM",
+                    "TBI",
+                    "TSV",
+                    "TXT",
+                    "VCF",
+                    "XML"
+                ]
+            },
+            "data_type": {
+                "errorMessage": "File type must be one of: fastq, bam, cram, gvcf. Defaults to fastq, if none is supplied.",
+                "meta": ["dataType"],
+                "type": "string",
+                "enum": []
             },
             "file1": {
                 "errorMessage": "File name cannot contain spaces and must have a valid extension according to the fileType provided.",
                 "type": "string",
-                "pattern": "^\\S+\\.(f(ast)?q|cram|bam|g?vcf)(\\.gz)?$",
+                "pattern": "^\\S+(\\.gz)?$",
                 "format": "file-path",
                 "exists": true
             },
@@ -65,10 +90,29 @@
                 "exists": true
             }
         },
-        "dependentRequired": {
-            "file2": ["file1"]
-        },
         "required": ["participant", "sample", "file1"],
-        "uniqueEntries": ["lane", "runId", "participant", "sample", "strategy"]
+        "uniqueEntries": ["lane", "runId", "participant", "sample", "strategy"],
+        "allOf": [
+            {
+                "dependentRequired": {
+                    "file2": ["file1"]
+                },
+                "errorMessage": "file2 requires file1 to be present."
+            },
+            {
+                "if": {
+                    "properties": {
+                        "file_type": {
+                            "not": {
+                                "enum": ["GVCF", "VCF", "BAM", "CRAM", "FASTQ"]
+                            }
+                        }
+                    },
+                    "required": ["file2"]
+                },
+                "then": false,
+                "errorMessage": "file2 is only allowed when file_type is one of: GVCF, VCF, BAM, CRAM, or FASTQ. Please remove the file2 entry for this row."
+            }
+        ]
     }
 }
