@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#10](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/10) Add modules and workflows to replace sampleID in vcf and bam/cram and rename fastq files
 
+### `Fixed`
+
+- [#13](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/13) Fix bug in parse_bam_header
+
 ### `Dependencies`
 
 - [#12](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/12) Input schema modified to accept multiple files for the parse_dragen module

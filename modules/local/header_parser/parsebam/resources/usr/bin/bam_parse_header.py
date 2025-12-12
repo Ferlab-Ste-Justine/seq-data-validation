@@ -66,7 +66,7 @@ def process_header(header, old_id, new_id, out, rg_out=None) -> None:
     rg_lines = []
     for line in header:
         if line.startswith("@PG"):
-            line = process_pg_line(line, old_id, new_id)
+            line,n = process_pg_line(line, old_id, new_id)
         elif line.startswith("@RG"):
             line, rgid = process_rg_line(line, old_id, new_id)
             rg_lines.append(line)
