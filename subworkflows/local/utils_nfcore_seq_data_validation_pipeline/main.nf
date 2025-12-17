@@ -29,6 +29,7 @@ workflow PIPELINE_INITIALISATION {
     nextflow_cli_args //   array: List of positional nextflow CLI args
     outdir            //  string: The output directory where the results will be saved
     input             //  string: Path to input samplesheet
+    replace_id        // boolean: Whether to replace sample IDs based on --id_mapping
 
     main:
 
@@ -67,18 +68,20 @@ workflow PIPELINE_INITIALISATION {
     channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, file1, file2 ->
-            def fileType = meta.fileType ?: inferFileTypeFromExtension(file1)
+            def fileType = inferFileTypeFromExtension(file1, meta.fileType)
             [ meta + [ participant_sample: "${meta.participant}_${meta.sample}", fileType: fileType ], file1, file2 ]
         }
         .tap { ch_participant_sample } // save raw input channel
-        .map { meta, _file1, _file2 -> meta.fileType }
-        .reduce([:]) { counts, fileType ->
-            counts[fileType] = (counts[fileType] ?: 0) + 1
+        .map { meta, _file1, _file2 -> meta }
+        .reduce([:]) { counts, meta ->
+            if(( replace_id && meta.fileType in ["FASTQ","GVCF","VCF","BAM","CRAM"]) || (!replace_id)) {
+                counts[meta.sample] = (counts[meta.sample] ?: 0) + 1
+            }
             counts
         }
         .combine(ch_participant_sample)
         .map { counts, meta, file1, file2 ->
-            def count = counts[meta.fileType]
+            def count = counts[meta.sample]
             [ meta + [ count:count ] , file1, file2 ] }
         .map { meta, file1, file2 ->
             if (meta.fileType == "FASTQ") {
@@ -154,21 +157,55 @@ workflow PIPELINE_COMPLETION {
 */
 
 //
-// Infer fileType from file extension
+// Validate and Infer fileType from file extension
 //
-def inferFileTypeFromExtension(file) {
-    def name = file.getFileName().toString()
-    if (name.contains('.fastq') || name.contains('.fq')) {
-        return "FASTQ"
-    } else if (name.endsWith('.bam')) {
-        return "BAM"
-    } else if (name.endsWith('.cram')) {
-        return "CRAM"
-    } else if (name.contains('.gvcf') || name.contains('.g.vcf')) {
-        return "GVCF"
-    } else if (name.contains('.vcf')) {
-        return "VCF"
+def inferFileTypeFromExtension(file, fileType=null) {
+    def name = file.getFileName().toString() - '.gz'
+
+    def indexFileTypes = ["BAI","CRAI","CSI","TBI"]
+    // Define mappings from file type to a list of possible extensions.
+    def fileTypeMappings = [
+        "GVCF" : ['.gvcf', '.g.vcf'],
+        "VCF"  : ['.vcf'],
+        "FASTQ": ['.fastq', '.fq'],
+        "BAM"  : ['.bam'],
+        "CRAM" : ['.cram'],
+        "BAI"  : ['.bai'],
+        "CRAI" : ['.crai'],
+        "CSI"  : ['.csi'],
+        "TBI"  : ['.tbi'],
+        "SAM"  : ['.sam'],
+        "CSV"  : ['.csv'],
+        "TSV"  : ['.tsv'],
+        "TXT"  : ['.txt'],
+        "MD5"  : ['.md5'],
+        "FAM"  : ['.fam'],
+        "PED"  : ['.ped'],
+        "HTML" : ['.html'],
+        "XML"  : ['.xml'],
+        "IDX"  : ['.idx']
+    ]
+
+    // Find the first map entry where any of its extensions match the end of the filename.
+    def matchedEntry = fileTypeMappings.find { entry ->
+        entry.value.any { extension -> name.endsWith(extension) }
+    }
+
+    if (matchedEntry) {
+        // Check if inferred fileType is an index file
+        if (matchedEntry?.key in indexFileTypes || fileType in indexFileTypes) {
+            error("Index files can only be provided as file2 accompanied by main data file for file: ${name}. Please check the input samplesheet.")
+        }
+        // if fileType exists, check it matches inferred fileType - Validation
+        if (fileType && matchedEntry?.key != fileType) {
+            error("Inferred fileType '${matchedEntry.key}' from file extension does not match provided fileType '${fileType}' for file: ${name}. Please check the input samplesheet.")
+        }
+        return matchedEntry.key
     } else {
+        if (fileType) {
+            log.info("Could not validate fileType from file extension for file: ${name}. Using provided fileType: ${fileType}.")
+            return fileType
+        }
         error("Could not infer fileType from file extension for file: ${name}. Please provide fileType in the input samplesheet.")
     }
 }

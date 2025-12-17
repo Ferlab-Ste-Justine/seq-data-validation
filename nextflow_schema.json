@@ -13,6 +13,7 @@
             "properties": {
                 "replace_sample_id": {
                     "type": "boolean",
+                    "default": false,
                     "description": "Run the tools to replace sample IDs with new IDs in all input files."
                 },
                 "id_mapping": {
@@ -23,8 +24,7 @@
                     "description": "Path to comma-separated file containing the correspondance between oldID to newID. Required if `replace_sample_id` == true",
                     "help_text": "Format:\noldID,newID\nsampleA,S001\nsampleB,S002\nsampleC,S003"
                 }
-            },
-            "required": ["replace_sample_id"]
+            }
         },
         "input_output_options": {
             "title": "Input/output options",

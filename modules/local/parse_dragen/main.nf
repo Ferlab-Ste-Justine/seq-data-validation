@@ -13,7 +13,7 @@ process PARSE_DRAGEN {
     output:
     tuple val(meta), path("${prefix}/**", type: "file"), emit: out_files
     tuple val(meta), path("file_manifest.tsv"), emit: manifest
-    tuple val(meta), path("unprocessed_files.txt"), emit: unprocessed_files
+    tuple val(meta), path("*.skipped_files.txt"), optional: true, emit: unprocessed_files
     path "versions.yml"       , topic: versions
 
     when:

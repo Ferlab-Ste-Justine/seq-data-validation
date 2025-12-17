@@ -238,9 +238,10 @@ def main():
 
     write_manifest(output_list)
 
-    with open(os.path.join("unprocessed_files.txt"), "w") as invalid_file:
-        for invalid in invalid_files:
-            invalid_file.write(f"{invalid}\n")
+    if len(invalid_files) > 0:
+        with open(os.path.join(f"{args.new_id}.skipped_files.txt"), "w") as invalid_file:
+            for invalid in invalid_files:
+                invalid_file.write(f"{invalid}\n")
 
 if __name__ == "__main__":
     main()
