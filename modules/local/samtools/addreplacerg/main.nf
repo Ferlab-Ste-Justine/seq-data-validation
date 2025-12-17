@@ -9,6 +9,7 @@ process SAMTOOLS_ADDREPLACERG {
 
     input:
     tuple val(meta), path(input), val(rg_line), val(rgid)
+    val(reference)
 
     output:
     tuple val(meta), path("*.{bam,cram}") , emit: bam
@@ -23,12 +24,14 @@ process SAMTOOLS_ADDREPLACERG {
     def rgid_arg = rgid ? "-R $rgid" : ''
     def prefix = task.ext.prefix ?: "${meta.id}"
     def file_type = input.getExtension()
+    def ref_arg = reference ? "--reference ${reference}" : ''
     """
     samtools \\
         addreplacerg \\
         $args \\
         $rg_arg \\
         $rgid_arg \\
+        $ref_arg \\
         -@ ${task.cpus} \\
         -o ${prefix}.${file_type} \\
         $input
