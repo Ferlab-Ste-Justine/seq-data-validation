@@ -6,12 +6,12 @@ include { SAMTOOLS_INDEX     } from '../../../modules/nf-core/samtools/index/mai
 include { SAMTOOLS_REHEADER } from '../../../modules/local/samtools/reheader/main'
 include { PARSER_PARSEBAM  as PARSE_BAM_HEADER } from '../../../modules/local/header_parser/parsebam/main'
 include { SAMTOOLS_ADDREPLACERG } from '../../../modules/local/samtools/addreplacerg/main'
-include { MD5SUM  } from '../../../modules/nf-core/md5sum/main'
 
 workflow BAM_ID_REPAIR {
 
     take:
     ch_input // channel: [ mandatory ] meta, bam/cram, bai/crai
+    reference  // channel: [ optional ] reference fasta file
 
     main:
     ch_versions = channel.empty()
@@ -41,7 +41,7 @@ workflow BAM_ID_REPAIR {
                 return [ meta, bam ]
         }
 
-    SAMTOOLS_ADDREPLACERG(ch_branch.change_rgid)
+    SAMTOOLS_ADDREPLACERG(ch_branch.change_rgid, reference)
 
     // create input to samtools reheader
     ch_reheader_input = ch_branch.direct
@@ -61,16 +61,10 @@ workflow BAM_ID_REPAIR {
     bam_bai = SAMTOOLS_REHEADER.out.bam
                 .join( index_ch )
 
-    MD5SUM ( bam_bai
-        .collect{ _meta, bam, _bai -> bam }
-        .map { files -> [ [id: 'mapped_reads'], files ] }, false )
-
     // Gather versions of all tools used
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
-    ch_versions = ch_versions.mix(MD5SUM.out.versions)
 
     emit:
     bam_bai                     // channel: [ val(meta), path(bam/cram), path(bai/crai) ]
-    checksums = MD5SUM.out.checksum  // channel: [ path(md5sum.txt) ]
     versions = ch_versions       // channel: [ path(versions.yml) ]
 }
