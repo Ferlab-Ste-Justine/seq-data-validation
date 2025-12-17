@@ -18,6 +18,7 @@ include { BAM_FILE_INTEGRITY  } from '../subworkflows/local/bam_file_integrity/m
 include { VCF_FILE_INTEGRITY  } from '../subworkflows/local/vcf_file_integrity/main'
 include { FASTQ_FILE_INTEGRITY  } from '../subworkflows/local/fastq_file_integrity/main'
 include { FILE_INTEGRITY_REPORT  } from '../subworkflows/local/generate_report/main'
+include { GENERATE_MANIFEST  } from '../subworkflows/local/generate_manifest/main'
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -35,6 +36,17 @@ workflow SEQ_DATA_VALIDATION {
     ch_versions = channel.empty()
     ch_integrity_reports = channel.empty()
     ch_multiqc_files = channel.empty()
+    ch_per_sample_manifest = channel.empty()
+
+    if (params.replace_sample_id) {
+        ch_manifest_files = channel.empty()
+    }
+    else {
+        ch_manifest_files = ch_samplesheet
+            .map { meta, files ->
+                [ meta, files[0], files[1] ]
+            }
+    }
 
     // inputs
     ch_fasta = params.fasta ? channel.value(file(params.fasta, checkIfExists:true)) : channel.value([])
@@ -53,8 +65,9 @@ workflow SEQ_DATA_VALIDATION {
         vcf:   meta.fileType in ["VCF","GVCF"]
             [ meta - meta.subMap('lane','runId'), files[0], files[1] ]
         remainder: true
-            return [ meta - meta.subMap('count','lane','runId'), files[0] ]
+            return [ meta - meta.subMap('lane','runId'), files[0] ]
         }
+
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
     Replace SampleID in BAM/CRAM and VCF/GVCF files
@@ -67,10 +80,12 @@ workflow SEQ_DATA_VALIDATION {
         -------
         */
         RENAME_FASTQ ( ch_samplesheet_parsed.fastq )
-        MD5SUM ( RENAME_FASTQ.out.fastq
-            .collect{ _meta, files -> files }
-            .map { files -> [ [id: 'fastq'], files ] }, false)
-        ch_versions = ch_versions.mix(MD5SUM.out.versions)
+        ch_fastq_out = RENAME_FASTQ.out.fastq
+            .map { meta, files ->
+                [ meta, files[0], files[1] ] }
+
+        ch_manifest_files = ch_manifest_files
+            .mix(ch_fastq_out)
 
         /*
         -------
@@ -79,14 +94,16 @@ workflow SEQ_DATA_VALIDATION {
         */
         VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
         ch_versions = ch_versions.mix(VCF_ID_REPAIR.out.versions)
+        ch_manifest_files = ch_manifest_files.mix(VCF_ID_REPAIR.out.vcf_tbi)
 
         /*
         -------
         Handle BAM/CRAM files
         ------
         */
-        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln )
+        BAM_ID_REPAIR ( ch_samplesheet_parsed.aln, ch_fasta )
         ch_versions = ch_versions.mix(BAM_ID_REPAIR.out.versions)
+        ch_manifest_files = ch_manifest_files.mix(BAM_ID_REPAIR.out.bam_bai)
 
         /*
         -------
@@ -97,7 +114,7 @@ workflow SEQ_DATA_VALIDATION {
         // group by sample
         ch_other_files = ch_samplesheet_parsed.remainder
             .map { meta, file ->
-                [meta - meta.subMap('fileType'), meta.fileType, file] }
+                [meta - meta.subMap('fileType','count'), meta.fileType, file] }
             .groupTuple()
             .map { meta, types_list, files ->
                 def oldID = meta.old_id
@@ -106,6 +123,8 @@ workflow SEQ_DATA_VALIDATION {
             }
 
         PARSE_DRAGEN( ch_other_files )
+        ch_per_sample_manifest = ch_per_sample_manifest.mix(PARSE_DRAGEN.out.manifest)
+
     }
 
 /*
@@ -131,6 +150,33 @@ workflow SEQ_DATA_VALIDATION {
     FILE_INTEGRITY_REPORT(ch_integrity_reports)
 
     ch_multiqc_files = ch_multiqc_files.mix(FILE_INTEGRITY_REPORT.out.json_report)
+
+/*
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    MANIFEST
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+*/
+
+    ch_others_manifest = ch_per_sample_manifest
+            .map { meta, manifest ->
+                [ meta.subMap('id','participant','sample','old_id'), manifest ]
+            }
+
+    ch_manifest_input = ch_manifest_files
+        .map { meta, file1, file2 ->
+            [ meta.subMap('id','participant','sample','count','old_id'), meta.fileType, file1, file2 ]
+            }
+        .map { meta, type, file1, file2 ->
+            def key = groupKey(meta - meta.subMap('count'), meta.count)
+                [key, type, file1, file2]
+            }
+        .groupTuple()
+        .map { key, types_list, files1, files2 ->
+            [ key.getGroupTarget(), types_list, files1, files2 ]
+        }
+        .join( ch_others_manifest, remainder: true )
+
+    GENERATE_MANIFEST ( ch_manifest_input )
 
 /*
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -192,7 +238,8 @@ workflow SEQ_DATA_VALIDATION {
         []
     )
 
-    emit:multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
+    emit:
+    multiqc_report = MULTIQC.out.report.toList() // channel: /path/to/multiqc_report.html
     versions       = ch_versions                 // channel: [ path(versions.yml) ]
 
 

@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- [#15](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/15) Workflow and modules to output file manifest
+
 - [#12](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/12) Add support for parsing additional file formats in the parse_dragen module
 
 - [#11](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/11) Add modules to compute md5sum for renamed fastq and repaired bam/cram files

@@ -1,6 +1,5 @@
 include { PARSER_PARSEVCF as PARSE_VCF_HEADER } from '../../../modules/local/header_parser/parsevcf/main'
 include { BCFTOOLS_REHEADER    } from '../../../modules/nf-core/bcftools/reheader/main'
-include { MD5SUM  } from '../../../modules/nf-core/md5sum/main'
 
 workflow VCF_ID_REPAIR {
 
@@ -26,16 +25,10 @@ workflow VCF_ID_REPAIR {
     vcf_tbi = BCFTOOLS_REHEADER.out.vcf
                 .join(BCFTOOLS_REHEADER.out.index)
 
-    MD5SUM ( vcf_tbi
-        .collect{ _meta, vcf, _tbi -> vcf }
-        .map { files -> [ [id: 'variants'], files ] }, false )
-
     // Gather versions of all tools used
     ch_versions = ch_versions.mix(BCFTOOLS_REHEADER.out.versions.first())
-    ch_versions = ch_versions.mix(MD5SUM.out.versions)
 
     emit:
     vcf_tbi                      // channel: [ val(meta), path(vcf), path(tbi) ]
-    checksums = MD5SUM.out.checksum  // channel: [ path(md5sum.txt) ]
     versions = ch_versions       // channel: [ path(versions.yml) ]
 }
