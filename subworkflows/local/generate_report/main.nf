@@ -16,7 +16,7 @@ workflow FILE_INTEGRITY_REPORT {
         .set { json_reports }
 
     json_reports.collectFile(
-            storeDir: "${params.outdir}/json_report",
+            storeDir: "${params.outdir}/file_integrity",
             name:  'file_integrity_report.json',
             newLine: true
         )

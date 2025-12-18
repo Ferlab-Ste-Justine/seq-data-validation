@@ -8,6 +8,7 @@ workflow VCF_ID_REPAIR {
 
     main:
     ch_versions = channel.empty()
+    ch_logs = channel.empty()
 
     ch_vcf_header = ch_input
         .map { meta, vcf, _tbi ->
@@ -28,7 +29,15 @@ workflow VCF_ID_REPAIR {
     // Gather versions of all tools used
     ch_versions = ch_versions.mix(BCFTOOLS_REHEADER.out.versions.first())
 
+    ch_logs = ch_input
+        .join(vcf_tbi)
+        .map { meta, vcf, _tbi, new_vcf, _new_tbi ->
+            def log_msg = "INFO - Successfully processed VCF - ${meta.sample}: ${vcf.getName()} -> ${new_vcf.getName()}"
+            [ meta, log_msg ]
+        }
+
     emit:
     vcf_tbi                      // channel: [ val(meta), path(vcf), path(tbi) ]
+    logs = ch_logs                     // channel: [ val(meta), val(log_msg) ]
     versions = ch_versions       // channel: [ path(versions.yml) ]
 }

@@ -35,6 +35,7 @@ workflow SEQ_DATA_VALIDATION {
 
     ch_versions = channel.empty()
     ch_integrity_reports = channel.empty()
+    ch_logs = channel.empty()
     ch_multiqc_files = channel.empty()
     ch_per_sample_manifest = channel.empty()
 
@@ -87,6 +88,20 @@ workflow SEQ_DATA_VALIDATION {
         ch_manifest_files = ch_manifest_files
             .mix(ch_fastq_out)
 
+        ch_logs = ch_logs.mix(ch_samplesheet_parsed.fastq
+            .join( RENAME_FASTQ.out.fastq )
+            .map { meta, fastqs, renamed_fastqs ->
+                def same_name = fastqs[0].getName() == renamed_fastqs[0].getName()
+                if ( same_name ) {
+                    def log_msg = "INFO - No renaming needed for ${meta.fileType} - ${meta.sample}: ${fastqs[0].getName()}, ${fastqs[1].getName()}. File copied as is."
+                    return [ meta, log_msg ]
+                }
+                def log_msg = "INFO - Successfully renamed ${meta.fileType} - ${meta.sample}: ${fastqs[0].getName()}, ${fastqs[1].getName()} -> ${renamed_fastqs[0].getName()}, ${renamed_fastqs[1].getName()}"
+                return [ meta, log_msg ]
+            }
+        )
+
+
         /*
         -------
         Handle VCF files
@@ -95,6 +110,7 @@ workflow SEQ_DATA_VALIDATION {
         VCF_ID_REPAIR ( ch_samplesheet_parsed.vcf )
         ch_versions = ch_versions.mix(VCF_ID_REPAIR.out.versions)
         ch_manifest_files = ch_manifest_files.mix(VCF_ID_REPAIR.out.vcf_tbi)
+        ch_logs = ch_logs.mix(VCF_ID_REPAIR.out.logs)
 
         /*
         -------
@@ -104,6 +120,7 @@ workflow SEQ_DATA_VALIDATION {
         BAM_ID_REPAIR ( ch_samplesheet_parsed.aln, ch_fasta )
         ch_versions = ch_versions.mix(BAM_ID_REPAIR.out.versions)
         ch_manifest_files = ch_manifest_files.mix(BAM_ID_REPAIR.out.bam_bai)
+        ch_logs = ch_logs.mix(BAM_ID_REPAIR.out.logs)
 
         /*
         -------
@@ -124,6 +141,20 @@ workflow SEQ_DATA_VALIDATION {
 
         PARSE_DRAGEN( ch_other_files )
         ch_per_sample_manifest = ch_per_sample_manifest.mix(PARSE_DRAGEN.out.manifest)
+
+        ch_logs
+            .map { meta, log_msg ->
+                def new_meta = meta.subMap('id','participant','sample','old_id','count')
+                [ new_meta, log_msg ]
+            }
+            .groupTuple()
+            .collectFile(storeDir: "${params.outdir}/results") { meta, log_msgs ->
+                new File("${params.outdir}/results/${meta.id}/logs").mkdirs()
+                def filename = "${meta.id}/logs/${meta.sample}.sample_rename.seq_data.log"
+                def date = new java.util.Date()
+                def loginfo_str = "${date} - INFO - Replaced sample ID in data files for sample ${meta.sample} (old ID: ${meta.old_id})\nINFO - Processing ${meta.count} file (pairs)..."
+                return [ filename , loginfo_str + "\n" + log_msgs.join("\n") ]
+            }
 
     }
 

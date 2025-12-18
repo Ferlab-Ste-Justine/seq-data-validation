@@ -15,6 +15,7 @@ workflow BAM_ID_REPAIR {
 
     main:
     ch_versions = channel.empty()
+    ch_logs = channel.empty()
 
     ch_bam_header = ch_input
         .map { meta, bam, _bai ->
@@ -64,7 +65,15 @@ workflow BAM_ID_REPAIR {
     // Gather versions of all tools used
     ch_versions = ch_versions.mix(SAMTOOLS_INDEX.out.versions.first())
 
+    ch_logs = ch_input
+        .join( bam_bai )
+        .map { meta, bam, _bai, new_bam, _new_bai ->
+            def log_msg = "INFO - Successfully processed ${meta.fileType} - ${meta.sample}: ${bam.getName()} -> ${new_bam.getName()}"
+            [ meta, log_msg ]
+        }
+
     emit:
     bam_bai                     // channel: [ val(meta), path(bam/cram), path(bai/crai) ]
+    logs = ch_logs                     // channel: [ val(meta), val(log_msg) ]
     versions = ch_versions       // channel: [ path(versions.yml) ]
 }
