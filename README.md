@@ -6,12 +6,6 @@
 
 ## Introduction
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
-
 **Ferlab-Ste-Justine/seq-data-validation** is a bioinformatics pipeline that validates the integrity and format of sequencing data files including FASTQ, BAM/CRAM, and VCF/GVCF files. It performs a series of checks to ensure that the files are not corrupted, conform to expected formats, and (optionally) contain valid variant information. The pipeline generates a comprehensive report summarizing the validation results for each file. Optionally, it can replace sample IDs in the data files based on a user-provided mapping.
 
 ## Pipeline Summary
@@ -20,9 +14,16 @@ The pipeline consists of three streams to validate different types of sequencing
 
 **_Sample ID Replacement module (optional):_**
 
+- **FASTQ** - Replace sample ID in file names.
 - **BAM/CRAM** - Parse and update header, replacing any occurrences of sample ID using custom scripts and `samtools reheader`. Optionally updating read groups with `samtools addreplacerg` if RGID contains sample ID.
 - **VCF/GVCF** - Parse and update header, replacing any occurrences of sample ID using custom scripts and `bcftools reheader`.
 - **Text files** - Replace sample ID occurrences in any text file using custom scripts.
+
+It accepts a mixed input of data files and internally separates the files by data type, running the relevant stream.
+
+At the end, it produces a set of data files with updated sample IDs.
+
+![IDRepairDiagram](docs/images/Ferlab-seq-data-IDrepair.drawio.png)
 
 **_Main Validation Streams:_**
 
@@ -48,10 +49,10 @@ First, prepare a samplesheet with your input data that looks as follows:
 `samplesheet.csv`:
 
 ```csv
-participant,sample,strategy,lane,fileType,file1,file2
-P001,S001,WGS,L001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
-P001,S001,WGS,,BAM,sample1.bam,sample1.bam.bai
-P001,S001,WGS,,GVCF,sample1.gvcf,sample1.gvcf.idx
+participant,sample,fileType,file1,file2
+P001,S001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
+P001,S001,BAM,sample1.bam,sample1.bam.bai
+P001,S001,GVCF,sample1.gvcf,sample1.gvcf.idx
 ```
 
 Each row represents a data file or a pair of files (FASTQ pairs or data file and its index). The `fileType` column indicates the type of data (FASTQ, BAM, CRAM, VCF, GVCF). The `file1` and `file2` columns contain the paths to the data files. For single-end FASTQ files or data files without an index, leave the `file2` column empty.
@@ -61,33 +62,65 @@ Each row represents a data file or a pair of files (FASTQ pairs or data file and
 `sample_id_map.csv`:
 
 ```csv
-newID,oldID
-NEW_S001,S001
-NEW_S002,S002
+oldID,newID
+S001,NEW_S001
+S002,NEW_S002
 ```
 
 > [!CAUTION] The `newID` values must exactly match `sample` in the input samplesheet. `oldID` values must be contained within the internal sample IDs of the data files for the replacement to work correctly.
 
-Now, you can run the pipeline:
+`params.json`:
+Parameters can be provided via a JSON or YAML file. Alternatively, parameters can be provided directly via the command line. It can also be a mix of both command-line parameters and a parameters file.
 
-Locally using the test profile with Docker:
+When input contains CRAM or GVCF files, reference genome files must be provided. Here is an example `params.json` file for running the pipeline with sample ID replacement:
 
-```bash
-nextflow run . -profile test,docker --input samplesheet.csv --id-mapping sample_id_map.csv --outdir <OUTDIR>
+```json
+{
+  "input": "samplesheet.csv",
+  "outdir": "results/",
+  "replace_sample": true,
+  "id_mapping": "sample_id_map.csv",
+  "fasta": "/path/to/reference.fasta",
+  "fai": "/path/to/reference.fasta.fai",
+  "fasta_dict": "/path/to/reference.dict"
+}
 ```
 
-In a production environment with a specific configuration and parameters:
+## Running the pipeline
 
-```bash
-nextflow -c app.config run Ferlab-Ste-Justine/seq-data-validation \
-    -r v1.0.0 \
-    --input samplesheet.csv \
-    --outdir <OUTDIR> \
-    -params-file params.json
-```
+- To run locally or in a virtual machine, use Docker:
 
-> [!WARNING]
-> Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+  ```bash
+  nextflow run Ferlab-Ste-Justine/seq-data-validation -profile docker \
+      -r v1.0.0 \
+      -params-file params.json
+  ```
+
+  or with a combination of a parameters file and command-line parameters:
+
+  ```bash
+  nextflow run Ferlab-Ste-Justine/seq-data-validation -profile docker \
+      -r v1.0.0 \
+      --input samplesheet.csv \
+      --outdir <OUTDIR> \
+      --replace_sample true \
+      -params-file params.json
+  ```
+
+  > [!NOTE] Parameters provided via the command line will override those provided in the parameters file if there are any conflicts.
+
+- In a production environment with a specific configuration and parameters:
+
+  ```bash
+  nextflow -c app.config run Ferlab-Ste-Justine/seq-data-validation \
+      -r v1.0.0 \
+      --input samplesheet.csv \
+      --outdir <OUTDIR> \
+      -params-file params.json
+  ```
+
+  > [!WARNING]
+  > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
 
 ## Credits
 

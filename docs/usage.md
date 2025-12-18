@@ -14,7 +14,7 @@ You will need to create a samplesheet with information about the samples you wou
 
 ### Minimal samplesheet
 
-The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 4 columns to match those defined in the table below.
+The samplesheet can have as many columns as you desire, however, there is a strict requirement for the first 3 columns if no pairs or indexes are provided, 4 otherwise, to match those defined in the table below.
 Below is an example for a minimal samplesheet containing a single paired-end FASTQ file, a BAM file with its index, and a GVCF file with its index.
 
 ```csv title="samplesheet.csv"
@@ -33,24 +33,21 @@ If the data consists of paired-end raw reads, both files **must** be provided.
 A final samplesheet file consisting of mixed data types may look something like the one below:
 
 ```csv title="samplesheet.csv"
-participant,sample,strategy,lane,fileType,file1,file2
-P001,S001,WGS,L001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
-P001,S001,WGS,,BAM,sample1.bam,sample1.bam.bai
-P001,S001,WGS,,GVCF,sample1.gvcf,sample1.gvcf.tbi
-P002,S002,WXS,L001,FASTQ,sample2_R1.fastq.gz,sample2_R2.fastq.gz
-P002,S002,WXS,L002,FASTQ,sample2_R1_L2.fastq.gz,sample2_R2_L2.fastq.gz
-P002,S002,WXS,,CRAM,sample2.cram,
-P002,S002,WXS,,VCF,sample2.cnv.vcf.gz,
-P002,S002,WXS,,GVCF,sample2.gvcf.gz,
+participant,sample,fileType,file1,file2
+P001,S001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
+P001,S001,BAM,sample1.bam,sample1.bam.bai
+P001,S001,GVCF,sample1.gvcf,sample1.gvcf.tbi
+P002,S002,FASTQ,sample2_R1.fastq.gz,sample2_R2.fastq.gz
+P002,S002,FASTQ,sample2_R1_L2.fastq.gz,sample2_R2_L2.fastq.gz
+P002,S002,CRAM,sample2.cram,
+P002,S002,VCF,sample2.cnv.vcf.gz,
+P002,S002,GVCF,sample2.gvcf.gz,
 ```
 
 | Column          | Description                                                                                                                                                                                                                                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | `participant`\* | Unique identifier for the participant. This entry will be identical for all samples from the same participant. Spaces in participant names are automatically converted to underscores (`_`).                                                       |
-| `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`).                                                             |
-| `strategy`\*    | Sequencing strategy used for the sample (e.g., WGS, WXS, RNA-Seq). This information can be useful for downstream analyses and reporting.                                                                                                           |
-| `lane`          | Identifier for the sequencing lane. This entry can be left empty if not applicable.                                                                                                                                                                |
-| `runId`         | Identifier for the sequencing run. This entry can be left empty if not applicable.                                                                                                                                                                 |
+| `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`).                                                             |     |
 | `fileType`      | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix. |
 | `file1`\*       | Full path to the primary data file. For FASTQ files, this is the first read in paired-end data or the single read in single-end data. For other file types, this is the data file itself.                                                          |
 | `file2`         | Full path to the secondary data file. For paired-end FASTQ files, this is the second read. For other file types this is the index file; if empty, the pipeline will assume index files are located in the same directory as the primary data file. |
@@ -58,6 +55,41 @@ P002,S002,WXS,,GVCF,sample2.gvcf.gz,
 **\*** Indicates required columns.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
+
+## ID Mapping file
+
+If you wish to replace sample IDs in the input files, you need to provide a mapping file with old and new sample IDs. Its location has to be specified with `--id_mapping`, along with setting `--replace_sample_id true` to enable the sample ID replacement in the input files.
+
+```bash
+--replace_sample_id true --id_mapping '[path to id_mapping file]'
+```
+
+or in the `params.json` file:
+
+```json
+{
+  "replace_sample_id": true,
+  "id_mapping": "[path to id_mapping file]"
+}
+```
+
+The mapping file has to be a comma-separated file with 2 columns, and a header row as shown in the example below.
+
+```
+oldID,newID
+sampleA,S001
+sampleB,S002
+sampleC,S003
+```
+
+| Column    | Description                                                                                                                                                             |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `oldID`\* | Identifier to replace in data files. It must be contained within the internal sample IDs within the data files. Only the portion matching the `oldID` will be replaced. |
+| `newID`\* | New sample ID to replace the old ID, with spaces converted to underscores (`_`).                                                                                        |
+
+> [!CAUTION] The `newID` values must exactly match `sample` in the [input samplesheet](#samplesheet-input). `oldID` values must be contained within the internal sample IDs of the data files for the replacement to work correctly.
+
+An [example mapping file](../assets/id_mapping.csv) has been provided with the pipeline.
 
 ## Running the pipeline
 
