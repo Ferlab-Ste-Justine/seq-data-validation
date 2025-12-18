@@ -169,6 +169,7 @@ def inferFileTypeFromExtension(file, fileType=null) {
         "VCF"  : ['.vcf'],
         "FASTQ": ['.fastq', '.fq'],
         "BAM"  : ['.bam'],
+        "BIN"  : ['.bin'],
         "CRAM" : ['.cram'],
         "BAI"  : ['.bai'],
         "CRAI" : ['.crai'],

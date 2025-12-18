@@ -2,24 +2,59 @@
 
 ## Introduction
 
-This document describes the output produced by the pipeline. Most of the plots are taken from the MultiQC report, which summarises results at the end of the pipeline.
+This document describes the output produced by the pipeline.
 
-The directories listed below will be created in the results directory after the pipeline has finished. All paths are relative to the top-level results directory.
+The directories listed below will be created in the output directory after the pipeline has finished. All paths are relative to the top-level output directory.
 
 ## Pipeline overview
 
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
+- [Sample ID replacement](#sample-id-replacement-results) (optional)
+- [File integrity and validation](#file-integrity-report)
+- [Per-sample file manifest](#per-sample-file-manifest)
 - [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
-### JSON Report
+### Sample ID replacement results
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `json_report/`
+- `results/`
+  - `${sample}/`
+    - logs/
+      - ${sample}.sample_rename.seq_data.log: Log file with details of ID replacement for sequence data files (fastq, bam/cram, vcf).
+      - ${sample}.sample_rename.others.log: Log file with details of the sample ID replacement process for other file types.
+      - `${sample}.skipped_files.txt`: File listing any files that could not be processed for this sample.
+    - `${file1}`
+    - `${file2}`
+    - `${file3}`
+    - ...
+
+</details>
+
+Each input file that had its sample ID replaced will be saved under a directory named after the new ID. Filenames will remain unchanged except for the sample ID portion.
+
+### File integrity report
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `file_integrity/`
   - `file_integrity_report.json`: A JSON file summarizing the validation results for each input file, including status (PASS/FAIL) and details of any issues encountered.
+
+</details>
+
+### Per-sample file manifest
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `results/`
+  - `${sample}/`
+    - `manifest/`
+      - `manifest_${sample}.tsv`: Manifest file including the files for the given sample. If replacing sample IDs, only the files with the new ID are included. Files that could not be processed are not included.
 
 </details>
 

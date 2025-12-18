@@ -52,6 +52,7 @@
                     "GVCF",
                     "BAM",
                     "BAI",
+                    "BIN",
                     "CSI",
                     "CRAM",
                     "CRAI",
