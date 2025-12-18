@@ -7,6 +7,7 @@ import shutil
 import sys
 import xml.etree.ElementTree as ET
 import hashlib
+import logging
 
 VERSION = "1.0.0"
 
@@ -17,14 +18,20 @@ ignore_files = [
     ".crai",
     ".fai",
     ".fa",
+    ".gvcf",
     ".gvcf.gz",
+    ".vcf",
     ".vcf.gz",
     ".tbi",
     ".dict",
     ".idx",
     ".md5sum",
     ".md5",
-    ".bin"
+    ".bin",
+    ".png",
+    ".jpg",
+    ".jpeg",
+    ".pdf"
 ]
 
 
@@ -53,7 +60,7 @@ def write_manifest(file_list):
     names, sizes, MD5 checksums, and types.
     """
     manifest_path = os.path.join(os.getcwd(), "file_manifest.tsv")
-    with open(manifest_path, "w") as manifest_file:
+    with open(manifest_path, "w", encoding="utf-8") as manifest_file:
         manifest_file.write("Filename\tSize\tMD5\tfileType\n")
         for file_path, file_type in file_list:
             if os.path.exists(file_path):
@@ -91,9 +98,9 @@ def process_xml(input_file, old_id, new_id):
         return tree
 
     except ET.ParseError as e:
-        print(f"Error: Failed to parse the XML file '{input_file}'. Details: {e}")
+        logging.error("Error: Failed to parse the XML file '%s'. Details: %s", input_file, e)
     except Exception as e:
-        print(f"An unexpected error occurred: {e}")
+        logging.error("An unexpected error occurred: %s", e)
 
 
 def process_file(input_path, output_path, old_id, new_id):
@@ -110,14 +117,16 @@ def process_file(input_path, output_path, old_id, new_id):
     try:
         is_gzipped = input_path.endswith(".gz")
         with (
-            gzip.open(input_path, "rt") if is_gzipped else open(input_path, "r")
+            gzip.open(input_path, "rt")
+            if is_gzipped
+            else open(input_path, "r", encoding="utf-8")
         ) as infile:
             # Use a temporary file for writing to avoid creating an empty file if there's an error
             temp_output_path = output_path + ".tmp"
             with (
                 gzip.open(temp_output_path, "wt")
                 if is_gzipped
-                else open(temp_output_path, "w")
+                else open(temp_output_path, "w", encoding="utf-8")
             ) as outfile:
                 replacements_made = False
                 # Compile regex for efficiency
@@ -131,8 +140,8 @@ def process_file(input_path, output_path, old_id, new_id):
 
         return replacements_made, temp_output_path
 
-    except Exception as e:
-        print(f"Error processing file {input_path}: {e}")
+    except IOError as e:
+        logging.error("Error processing file %s: %s", input_path, e)
         # Clean up temp file on error
         if "temp_output_path" in locals() and os.path.exists(temp_output_path):
             os.remove(temp_output_path)
@@ -151,28 +160,31 @@ def process_input(files, types, old_id, new_id, outdir):
     """
     processed_files = []
     invalid_files = []
+    modified_count = 0
+    copied_count = 0
     for i, (file_path, file_type) in enumerate(zip(files, types), start=1):
         base_name = os.path.basename(file_path)
         file_ext = os.path.splitext(file_path)[1]
-        print(file_ext, file_type)
-        print(f"[{i}/{len(files)}]")
+        logging.info("Processing file %d/%d: %s", i, len(files), os.path.basename(file_path))
         new_base_name = os.path.join(outdir, base_name.replace(old_id, new_id))
 
         if file_ext in ignore_files:
-            print(f"Ignoring {file_path}. - file type cannot be processed.")
-            invalid_files.append(file_path)
+            logging.warning("Ignoring %s. - file type cannot be processed.", os.path.basename(file_path))
+            invalid_files.append(os.path.basename(file_path))
             continue
 
         elif file_ext in (".bed", ".bw", ".bed.gz", ".gff3"):
             shutil.copy(file_path, new_base_name)
+            copied_count += 1
 
         elif file_ext == ".xml":
             tree = process_xml(file_path, old_id, new_id)
             # Write the modified tree to a new file
             tree.write(new_base_name, encoding="utf-8", xml_declaration=True)
-            print(
-                f"Successfully processed '{file_path}' and saved to '{new_base_name}'."
+            logging.info(
+                "Successfully processed '%s' and saved to '%s'.", os.path.basename(file_path), new_base_name
             )
+            modified_count += 1
 
         else:
             replacements_made, tmp_out = process_file(
@@ -180,18 +192,20 @@ def process_input(files, types, old_id, new_id, outdir):
             )
             # If no replacements were made, copy the original file. Otherwise, move the temp file.
             if not replacements_made:
-                print(f"No changes made to '{file_path}'. Copied to '{new_base_name}'.")
+                logging.info("No changes made to '%s'. Copied to '%s'.", os.path.basename(file_path), new_base_name)
                 shutil.copy(file_path, new_base_name)
                 os.remove(tmp_out)  # Clean up temp file
+                copied_count += 1
             else:
                 shutil.move(tmp_out, new_base_name)
-                print(
-                    f"Successfully processed '{file_path}' and wrote to '{new_base_name}'."
+                logging.info(
+                    "Successfully processed '%s' and wrote to '%s'.", os.path.basename(file_path), new_base_name
                 )
+                modified_count += 1
 
         processed_files.append((new_base_name, file_type))
 
-    return processed_files, invalid_files
+    return processed_files, invalid_files, modified_count, copied_count
 
 
 def main():
@@ -222,26 +236,48 @@ def main():
     )
     args = parser.parse_args()
 
-    if len(args.files) != len(args.types):
-        print("Error: The number of files must match the number of types.")
-        sys.exit(1)
-
     # Create the output directory if it doesn't exist
     if not os.path.exists(args.outdir):
         os.makedirs(args.outdir)
 
-    print(f"Processing {len(args.files)} files...")
+    # Setup logging
+    log_file = os.path.join(f"{args.new_id}.sample_rename.others.log")
+    logging.basicConfig(
+        filename=log_file,
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        datefmt="%Y-%m-%d %H:%M:%S",
+    )
 
-    output_list, invalid_files = process_input(
+    logging.info("Starting file processing. Sample %s", args.new_id)
+    logging.info("Old Sample ID: %s", args.old_id)
+    logging.info("New Sample ID: %s", args.new_id)
+
+    if len(args.files) != len(args.types):
+        logging.error("Error: The number of files must match the number of types.")
+        sys.exit(1)
+
+    logging.info("Processing %d files...", len(args.files))
+
+    output_list, invalid_files, modified_count, copied_count = process_input(
         args.files, args.types, args.old_id, args.new_id, args.outdir
     )
 
     write_manifest(output_list)
 
     if len(invalid_files) > 0:
-        with open(os.path.join(f"{args.new_id}.skipped_files.txt"), "w") as invalid_file:
+        skipped_files_path = os.path.join(f"{args.new_id}.skipped_files.txt")
+        with open(skipped_files_path, "w", encoding="utf-8") as invalid_file:
             for invalid in invalid_files:
                 invalid_file.write(f"{invalid}\n")
+        logging.warning("%d files were skipped. See %s", len(invalid_files), skipped_files_path)
+
+    logging.info("File processing summary:")
+    logging.info("Total files processed: %d", len(output_list))
+    logging.info("Files modified: %d", modified_count)
+    logging.info("Files copied/renamed: %d", copied_count)
+    logging.info("Files skipped: %d", len(invalid_files))
+    logging.info("Processing complete.")
 
 if __name__ == "__main__":
     main()
