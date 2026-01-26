@@ -69,20 +69,31 @@ workflow PIPELINE_INITIALISATION {
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, file1, file2 ->
             def fileType = inferFileTypeFromExtension(file1, meta.fileType)
-            [ meta + [ participant_sample: "${meta.participant}_${meta.sample}", fileType: fileType ], file1, file2 ]
+            [ meta + [ participant_sample: "${meta.participant}_${meta.sample}", fileType: fileType ], [file1, file2] ]
         }
         .tap { ch_participant_sample } // save raw input channel
-        .map { meta, _file1, _file2 -> meta }
+        .map { _meta, files -> files }
+        .reduce([:]) { counts, files -> //get line number for each row to construct unique sample ids
+            counts[files] = counts.size() + 1
+            return counts
+        }
+        .combine( ch_participant_sample )
+        .map { rowno, meta, files ->
+            def new_meta = meta + [ file_id: meta.sample+"_"+rowno[files] ]
+            [ new_meta, files ]
+        }
+        .tap { ch_sample_fileid } // save updated input channel with unique sample ids
+        .map { meta, _files -> meta }
         .reduce([:]) { counts, meta ->
             if(( replace_id && meta.fileType in ["FASTQ","GVCF","VCF","BAM","CRAM"]) || (!replace_id)) {
                 counts[meta.sample] = (counts[meta.sample] ?: 0) + 1
             }
             counts
         }
-        .combine(ch_participant_sample)
-        .map { counts, meta, file1, file2 ->
+        .combine(ch_sample_fileid)
+        .map { counts, meta, files ->
             def count = counts[meta.sample]
-            [ meta + [ count:count ] , file1, file2 ] }
+            [ meta + [ count:count ] , files[0], files[1] ] }
         .map { meta, file1, file2 ->
             if (meta.fileType == "FASTQ") {
                 if (!file2) {
@@ -217,7 +228,7 @@ def inferFileTypeFromExtension(file, fileType=null) {
         return matchedEntry.key
     } else {
         if (fileType) {
-            log.info("Could not validate fileType from file extension for file: ${name}. Using provided fileType: ${fileType}.")
+            log.warn("Could not validate fileType from file extension for file: ${name}. Using provided fileType: ${fileType}.")
             return fileType
         }
         error("Could not infer fileType from file extension for file: ${name}. Please provide fileType in the input samplesheet.")
