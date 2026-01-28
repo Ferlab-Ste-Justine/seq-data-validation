@@ -108,7 +108,20 @@ workflow PIPELINE_INITIALISATION {
 
         ch_samplesheet = ch_samplesheet
             .map { meta, files -> [ meta.sample, [ meta , files ] ] }
-            .combine(id_replace_map, by: 0)
+            .groupTuple()
+            .join(id_replace_map, remainder: true)
+            .filter{ _sample, meta_files, _old_id ->
+                meta_files!=null
+            }
+            .view { sample, _meta_files, old_id ->
+                if (!old_id) {
+                    error("ERROR - No mapping found for sample ID: ${sample} in --id_mapping file. Please check the input samplesheet and id_mapping file.")
+                }
+                else {
+                    log.info("INFO - Replacing sample ID: ${old_id} -> ${sample}")
+                }
+            }
+            .transpose()
             .map{ _sample, meta_files, old_id ->
                 def (meta, files) = meta_files
                 [meta + [old_id: old_id], files]
