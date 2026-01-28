@@ -11,8 +11,8 @@ process PARSE_DRAGEN {
     tuple val(meta), val(types), path(files, stageAs: "inputs/*", arity:'1..*'), val(oldID), val(newID)
 
     output:
-    tuple val(meta), path("${prefix}/**", type: "file"), emit: out_files
-    tuple val(meta), path("file_manifest.tsv"), emit: manifest
+    tuple val(meta), path("${prefix}/**", type: "file"), optional: true, emit: out_files
+    tuple val(meta), path("file_manifest.tsv"), optional: true, emit: manifest
     tuple val(meta), path("*.log"), emit: log
     tuple val(meta), path("*.skipped_files.txt"), optional: true, emit: unprocessed_files
     path "versions.yml"       , topic: versions
@@ -22,6 +22,7 @@ process PARSE_DRAGEN {
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: ''
     def file_list = files.join(' ')
     def types_list = types.join(' ')
     """
@@ -30,7 +31,8 @@ process PARSE_DRAGEN {
         --old_id ${oldID} \\
         --types ${types_list} \\
         --files ${file_list} \\
-        -o ${prefix}
+        -o ${prefix} \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

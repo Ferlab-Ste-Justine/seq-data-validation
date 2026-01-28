@@ -13,7 +13,6 @@
             "properties": {
                 "replace_sample_id": {
                     "type": "boolean",
-                    "default": false,
                     "description": "Run the tools to replace sample IDs with new IDs in all input files."
                 },
                 "id_mapping": {
@@ -50,6 +49,10 @@
                     "description": "The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure.",
                     "fa_icon": "fas fa-folder-open"
                 },
+                "path_in_manifest": {
+                    "type": "boolean",
+                    "description": "Add final output path to file_name in manifest."
+                },
                 "publish_all": {
                     "type": "boolean",
                     "description": "Whether to publish the output of each process."
@@ -71,8 +74,7 @@
                     "type": "string",
                     "description": "The reference genome FASTA file",
                     "pattern": "^.*\\.fasta$",
-                    "format": "file-path",
-                    "help_text": ""
+                    "format": "file-path"
                 },
                 "fai": {
                     "type": "string",
@@ -92,13 +94,15 @@
                     "type": "string",
                     "description": "Path to a the DBSNP reference data file",
                     "pattern": "^.*\\.vcf(\\.gz)$",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "hidden": true
                 },
                 "regions_bed": {
                     "type": "string",
                     "description": "If specified, the given interval file will be used to define the genomic interval(s) over which we operate (WES, WGS or targeted sequencing).",
                     "pattern": "^.*\\.bed$",
-                    "format": "file-path"
+                    "format": "file-path",
+                    "hidden": true
                 }
             },
             "fa_icon": "fas fa-book-open"
