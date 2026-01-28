@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### `Fixed`
+
+- [#20](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/20) Fix parsing error when VCF has no GTs/sampleID.
+
 ## v1.0.0 - [18/12/25]
 
 ### `Added`

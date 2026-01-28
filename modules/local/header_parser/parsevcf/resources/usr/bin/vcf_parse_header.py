@@ -1,10 +1,13 @@
 #!/usr/bin/env python
+"""Script to parse and modify VCF headers by replacing sample IDs."""
 import argparse
 import re
 import os
+import sys
+import logging
 import pysam.bcftools
 
-VERSION = "1.0.0"
+VERSION = "1.0.1"
 
 
 def process_header(header, old_id, new_id, out) -> None:
@@ -16,7 +19,7 @@ def process_header(header, old_id, new_id, out) -> None:
     :param new_id: New sample ID to replace the old ID
     :param out: Output file path
     """
-    with open(out, "wt") as outfile:
+    with open(out, "wt", encoding="utf-8") as outfile:
         for line in header:
             # Replace all substrings that look like a path with their basename
             if re.match(r"##.*Command.*", line):
@@ -29,20 +32,36 @@ def process_header(header, old_id, new_id, out) -> None:
                     r"(?=[^\W]?)" + re.escape(old_id) + r"(?=[^\W]?|$)", new_id, line
                 )
             elif line.startswith("#CHROM"):
-                sample_id = line.strip().split("\t")[
-                    9
-                ]  # Sample IDs start from the 10th column
-                if old_id not in sample_id:
-                    raise ValueError(
-                        "Old ID does not match sample ID in header.\n Found sample ID: "
-                        + sample_id
-                        + "\n Expected to find: "
-                        + old_id
+                try:
+                    # Sample IDs start from the 10th column
+                    sample_ids = line.strip().split("\t")[9:]
+                    sample_id = sample_ids[0]
+                    # make sure the is only one sample ID in the VCF
+                    if len(sample_ids) != 1:
+                        s = (
+                            "VCF contains multiple sample IDs. "
+                            "This script only supports single-sample VCFs."
+                        )
+                        logging.error(s)
+                        raise ValueError(s)
+                    if old_id not in sample_id:
+                        s = (
+                            f"Old ID does not match sample ID in header.\n"
+                            f"Found sample ID: {sample_id}\n Expected to find: {old_id}"
+                        )
+                        logging.error(s)
+                        raise ValueError(s)
+                    # ID could have underscores.
+                    line = re.sub(
+                        r"(?=[^\W]?)" + re.escape(old_id) + r"(?=[^\W]?|$)",
+                        new_id,
+                        line,
                     )
-                # ID could have underscores.
-                line = re.sub(
-                    r"(?=[^\W]?)" + re.escape(old_id) + r"(?=[^\W]?|$)", new_id, line
-                )
+                except IndexError:
+                    # No sample ID/s found in header. VCF without Genotypes -> OK. Keep line as is
+                    logging.info(
+                        "No sample ID found in VCF header. Assuming VCF without genotypes."
+                    )
             outfile.write(line + "\n")
 
 
@@ -64,6 +83,11 @@ def main():
         "-o", "--output", type=str, default="new.header.vcf", help="Output VCF path"
     )
     args = parser.parse_args()
+
+    logging.basicConfig(level=logging.INFO,
+        format='%(asctime)s - %(levelname)s - %(message)s',
+        handlers=[logging.StreamHandler(sys.stdout)]
+        )
 
     header = pysam.bcftools.head(args.path, catch_stdout=True, split_lines=True)
 
