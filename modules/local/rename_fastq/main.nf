@@ -14,6 +14,9 @@ process RENAME_FASTQ {
     for fq in ${fastq_files.join(' ')}; do
         base_name=\$(basename \$fq)
         new_name="\${base_name/${meta.old_id}/${meta.sample}}"
+        if [[ \$new_name != *"${meta.sample}"* ]]; then
+            new_name="${meta.sample}.\$new_name"
+        fi
         mv --no-copy -n \$fq \$new_name || true
     done
     """

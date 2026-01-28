@@ -12,7 +12,7 @@ workflow FILE_INTEGRITY_REPORT {
     main:
 
     file_integrity_reports.toList()
-        .map { it -> buildReport(it) }
+        .map { it -> buildReport(it, params.outdir) }
         .set { json_reports }
 
     json_reports.collectFile(
@@ -59,7 +59,7 @@ def parseOutput(file, process) {
 //
 // Build JSON report from outputs
 //
-def buildReport(outputs) {
+def buildReport(outputs, outdir) {
     def report = [:]
 
     outputs.each { meta, input1, input2, checks ->
@@ -90,7 +90,7 @@ def buildReport(outputs) {
             'checks': status_map
             ] +
             (error_list.size() > 0 ? ['errors': error_list] : []) +
-            [ 'full_path': input1.toString() ]
+            [ 'full_path': "${outdir}/results/${meta.id}/${input1.name}" ]
     }
 
     def summary_text = "${report.values().count { it -> it.status == 'PASS' }} PASS | ${report.values().count { it -> it.status == 'FAIL' }} FAIL"

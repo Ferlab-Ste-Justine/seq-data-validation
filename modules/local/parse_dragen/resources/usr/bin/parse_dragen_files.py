@@ -44,28 +44,28 @@ def calculate_md5(filepath, chunk_size=8192):
     return md5_hash.hexdigest()
 
 
-def file_manifest(file, file_type):
+def file_manifest(file, file_type, parent_path=None):
     """
     Generates a manifest entry for a given file.
     """
-    name = os.path.basename(file)
+    name = os.path.basename(file) if parent_path is None else os.path.join(parent_path, os.path.basename(file))
     size = os.path.getsize(file)
     md5 = calculate_md5(file)
     return f"{name}\t{size}\t{md5}\t{file_type}\n"
 
 
-def write_manifest(file_list):
+def write_manifest(sample, file_list, parent_path=None):
     """
     Generates a manifest file listing all processed files with their
     names, sizes, MD5 checksums, and types.
     """
     manifest_path = os.path.join(os.getcwd(), "file_manifest.tsv")
     with open(manifest_path, "w", encoding="utf-8") as manifest_file:
-        manifest_file.write("Filename\tSize\tMD5\tfileType\n")
+        manifest_file.write("sample_id\tfile_name\tfile_size\tfile_md5sum\tfile_type\n")
         for file_path, file_type in file_list:
             if os.path.exists(file_path):
-                entry = file_manifest(file_path, file_type)
-                manifest_file.write(entry)
+                entry = file_manifest(file_path, file_type, parent_path)
+                manifest_file.write(f"{sample}\t{entry}")
 
 
 def process_xml(input_file, old_id, new_id):
@@ -234,6 +234,9 @@ def main():
     parser.add_argument(
         "--outdir", "-o", type=str, required=True, help="Output directory"
     )
+    parser.add_argument(
+        "-p", "--parent_path", type=str, help="path to prepend to file names in manifest", default=None
+    )
     args = parser.parse_args()
 
     # Create the output directory if it doesn't exist
@@ -263,7 +266,7 @@ def main():
         args.files, args.types, args.old_id, args.new_id, args.outdir
     )
 
-    write_manifest(output_list)
+    write_manifest(args.new_id, output_list, args.parent_path)
 
     if len(invalid_files) > 0:
         skipped_files_path = os.path.join(f"{args.new_id}.skipped_files.txt")

@@ -35,6 +35,10 @@ workflow GENERATE_MANIFEST {
 
     COMBINE_MANIFESTS(ch_input_cat)
 
+    COMBINE_MANIFESTS.out.manifest
+        .map{ _meta, manifest_path -> manifest_path }
+        .collectFile( storeDir: "${params.outdir}/manifest", name: 'manifest.tsv', keepHeader: true, skip: 1)
+
     emit:
     manifest = COMBINE_MANIFESTS.out.manifest   // channel: [ manifest_*.tsv ]
 }

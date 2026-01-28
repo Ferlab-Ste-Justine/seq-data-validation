@@ -18,6 +18,6 @@ process COMBINE_MANIFESTS {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    echo "Filename\tSize\tMD5\tfileType\n" > manifest_${prefix}.tsv
+    echo "sample_id\tfile_name\tfile_size\tfile_md5sum\tfile_type\n" > manifest_${prefix}.tsv
     """
 }

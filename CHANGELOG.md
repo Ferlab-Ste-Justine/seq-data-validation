@@ -5,6 +5,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### `Added`
+
+- [#24](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/24) Added optional `bool` param `--path_in_manifest` to specify if manifest should contain full path to files or just filenames. Added new output `manifest.tsv` of entire run. Added more logging.
+
+### `Changed`
+
+- [#24](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/24) Added sample_id to manifest output columns. Changed manifest colnames to match colnames in CQDG manifest. Output filenames will always contain sample_id even if input name does not. File integrity report will now contain full output path to files.
+
 ### `Fixed`
 
 - [#23](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/23) Fixed errors when input is an unsorted bam.

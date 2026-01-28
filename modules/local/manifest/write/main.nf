@@ -9,6 +9,7 @@ process WRITE_MANIFEST {
 
     input:
     tuple val(meta), val(types), path(files)
+
     output:
     tuple val(meta), path("*_manifest.tsv"), emit: manifest
     path "versions.yml"       , topic: versions
@@ -18,13 +19,16 @@ process WRITE_MANIFEST {
 
     script:
     prefix = task.ext.prefix ?: "${meta.id}"
+    def args = task.ext.args ?: ''
     def file_list = files.join(' ')
     def types_list = types.join(' ')
     """
     write_manifest.py \\
+        --sample ${prefix} \\
         --types ${types_list} \\
         --files ${file_list} \\
-        -o ${prefix}_manifest.tsv
+        -o ${prefix}_manifest.tsv \\
+        ${args}
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
@@ -35,8 +39,8 @@ process WRITE_MANIFEST {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    echo "Filename\tSize\tMD5\tfileType\n" > ${prefix}_manifest.tsv
-    echo "sample1.fastq\t0\td41d8cd98f00b204e9800998ecf8427e\tFASTQ\n" >> ${prefix}_manifest.tsv
+    echo "sample_id\tfile_name\tfile_size\tfile_md5sum\tfile_type\n" > ${prefix}_manifest.tsv
+    echo "S001\tS001.sample1.fastq\t0\td41d8cd98f00b204e9800998ecf8427e\tFASTQ\n" >> ${prefix}_manifest.tsv
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
