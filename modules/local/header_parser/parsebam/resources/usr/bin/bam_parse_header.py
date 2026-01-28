@@ -115,7 +115,7 @@ def main():
     pysam.samtools.quickcheck(args.path)
 
     # Get header
-    header = pysam.samtools.head(args.path, catch_stdout=True, split_lines=True)
+    header = pysam.samtools.view("-H","--no-PG", args.path, catch_stdout=True).splitlines()
 
     # Process header and output RG line if needed
     process_header(header, args.old_id, args.new_id, args.output, args.rg_output)
