@@ -39,7 +39,7 @@ process WRITE_MANIFEST {
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
     """
-    echo "sample_id\tfile_name\tfile_size\tfile_md5sum\tfile_type\n" > ${prefix}_manifest.tsv
+    echo submitter_sample_id\tsubmitter_file_name\tfile_size\tfile_md5sum\tfile_type\n" > ${prefix}_manifest.tsv
     echo "S001\tS001.sample1.fastq\t0\td41d8cd98f00b204e9800998ecf8427e\tFASTQ\n" >> ${prefix}_manifest.tsv
 
     cat <<-END_VERSIONS > versions.yml
