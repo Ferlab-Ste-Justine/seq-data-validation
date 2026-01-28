@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Fixed`
 
+- [#22](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/22) Add unique file_id to each entry in the samplesheet to avoid metadata conflicts when a same sample has multiple files of the same type.
+
 - [#21](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/21) Fix validate that all samples in the samplesheet are present in the id_mapping file when replacing sample IDs.
+
 - [#20](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/20) Fix parsing error when VCF has no GTs/sampleID.
 
 ## v1.0.0 - [18/12/25]

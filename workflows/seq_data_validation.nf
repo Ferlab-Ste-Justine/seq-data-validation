@@ -131,7 +131,7 @@ workflow SEQ_DATA_VALIDATION {
         // group by sample
         ch_other_files = ch_samplesheet_parsed.remainder
             .map { meta, file ->
-                [meta - meta.subMap('fileType','count'), meta.fileType, file] }
+                [meta - meta.subMap('file_id','fileType','count'), meta.fileType, file] }
             .groupTuple()
             .map { meta, types_list, files ->
                 def oldID = meta.old_id
