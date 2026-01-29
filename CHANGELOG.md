@@ -5,6 +5,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## v1.1.0 - [28/01/26]
+
 ### `Added`
 
 - [#24](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/24) Added optional `bool` param `--path_in_manifest` to specify if manifest should contain full path to files or just filenames. Added new output `manifest.tsv` of entire run. Added more logging.

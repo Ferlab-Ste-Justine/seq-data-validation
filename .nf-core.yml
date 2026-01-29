@@ -56,7 +56,7 @@ template:
   name: seq-data-validation
   description: Pipeline to validate the integrity of sequencing data files
   author: Georgette Femerling, Félix-Antoine Le Sieur, Samantha Yuen, Lysian Bouchard, David Morais
-  version: 1.0.0dev
+  version: 1.1.0
   force: true
   outdir: .
   skip_features:
