@@ -11,9 +11,9 @@ The directories listed below will be created in the output directory after the p
 The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes data using the following steps:
 
 - [Sample ID replacement](#sample-id-replacement-results) (optional)
-- [File integrity and validation](#file-integrity-report)
+- [Manifest file](#manifest)
 - [Per-sample file manifest](#per-sample-file-manifest)
-- [MultiQC](#multiqc) - Aggregate report describing results and QC from the whole pipeline
+- [File integrity and validation](#file-integrity-report) Aggregate report describing validation results from the whole pipeline
 - [Pipeline information](#pipeline-information) - Report metrics generated during the workflow execution
 
 ### Sample ID replacement results
@@ -36,13 +36,13 @@ The pipeline is built using [Nextflow](https://www.nextflow.io/) and processes d
 
 Each input file that had its sample ID replaced will be saved under a directory named after the new ID. Filenames will remain unchanged except for the sample ID portion.
 
-### File integrity report
+### Manifest
 
 <details markdown="1">
 <summary>Output files</summary>
 
-- `file_integrity/`
-  - `file_integrity_report.json`: A JSON file summarizing the validation results for each input file, including status (PASS/FAIL) and details of any issues encountered.
+- `manifest/`
+  - `manifest.tsv`: Manifest file including all the processed files. If replacing sample IDs, only the files with the new ID are included. Files that could not be processed are not included.
 
 </details>
 
@@ -58,7 +58,19 @@ Each input file that had its sample ID replaced will be saved under a directory 
 
 </details>
 
-### MultiQC
+### File integrity report
+
+**JSON output**
+
+<details markdown="1">
+<summary>Output files</summary>
+
+- `file_integrity/`
+  - `file_integrity_report.json`: A JSON file summarizing the validation results for each input file, including status (PASS/FAIL) and details of any issues encountered.
+
+</details>
+
+**MultiQC HTML report**
 
 <details markdown="1">
 <summary>Output files</summary>

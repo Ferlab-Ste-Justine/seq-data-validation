@@ -39,24 +39,69 @@ P001,S001,BAM,sample1.bam,sample1.bam.bai
 P001,S001,GVCF,sample1.gvcf,sample1.gvcf.tbi
 P002,S002,FASTQ,sample2_R1.fastq.gz,sample2_R2.fastq.gz
 P002,S002,FASTQ,sample2_R1_L2.fastq.gz,sample2_R2_L2.fastq.gz
-P002,S002,CRAM,sample2.cram,
-P002,S002,VCF,sample2.cnv.vcf.gz,
-P002,S002,GVCF,sample2.gvcf.gz,
+P002,S002,CRAM,sample2.cram
+P002,S002,VCF,sample2.cnv.vcf.gz
+P002,S002,GVCF,sample2.gvcf.gz
 ```
 
-| Column          | Description                                                                                                                                                                                                                                        |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
-| `participant`\* | Unique identifier for the participant. This entry will be identical for all samples from the same participant. Spaces in participant names are automatically converted to underscores (`_`).                                                       |
-| `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`).                                                             |     |
-| `fileType`      | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix. |
-| `file1`\*       | Full path to the primary data file. For FASTQ files, this is the first read in paired-end data or the single read in single-end data. For other file types, this is the data file itself.                                                          |
-| `file2`         | Full path to the secondary data file. For paired-end FASTQ files, this is the second read. For other file types this is the index file; if empty, the pipeline will assume index files are located in the same directory as the primary data file. |
+| Column          | Description                                                                                                                                                                                                                                                                     |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| `participant`\* | Unique identifier for the participant. This entry will be identical for all samples from the same participant. Spaces in participant names are automatically converted to underscores (`_`).                                                                                    |
+| `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). **This field will be used to name output files and directories.**                        |     |
+| `fileType`      | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix.                              |
+| `file1`\*       | Full path to the primary data file. For FASTQ files, this is the first read in paired-end data or the single read in single-end data. For other file types, this is the data file itself. **Supports remote s3 paths.**                                                         |
+| `file2`         | Full path to the secondary data file. For paired-end FASTQ files, this is the second read. For other file types this is the index file; if empty, the pipeline will assume index files are located in the same directory as the primary data file. **Supports remote s3 paths** |
 
 **\*** Indicates required columns.
 
 An [example samplesheet](../assets/samplesheet.csv) has been provided with the pipeline.
 
-## ID Mapping file
+## Parameters file
+
+`params.json`:
+Parameters can be provided via a JSON or YAML file. Alternatively, parameters can be provided directly via the command line. It can also be a mix of both command-line parameters and a parameters file.
+
+When input contains CRAM or GVCF files, reference genome files must be provided. Here is an example `params.json` file for running the pipeline with sample ID replacement:
+
+```json
+{
+  "input": "samplesheet.csv",
+  "outdir": "results/",
+  "replace_sample": true,
+  "id_mapping": "sample_id_map.csv",
+  "fasta": "/path/to/reference.fasta",
+  "fai": "/path/to/reference.fasta.fai",
+  "fasta_dict": "/path/to/reference.dict"
+}
+```
+
+> S3 paths can also be used for input and output locations.
+
+Below is a list of the common parameters for this pipeline:
+
+<details>
+  <summary>Commonly used parameters</summary>
+
+| Parameter           | Description                                                                                                              | Type      | Default | Required                                       |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------ | --------- | ------- | ---------------------------------------------- |
+| `input`             | Path to comma-separated file containing information about the samples in the experiment.                                 | `string`  | -       | Required                                       |
+| `outdir`            | The output directory where the results will be saved. You have to use absolute paths to storage on Cloud infrastructure. | `string`  | -       | Required                                       |
+| `path_in_manifest`  | Add final output path to file_name in manifest.                                                                          | `boolean` | false   | Optional                                       |
+| `replace_sample_id` | Run the tools to replace sample IDs with new IDs in all input files.                                                     | `boolean` | false   | Optional                                       |
+| `id_mapping`        | Path to comma-separated file containing the correspondance between oldID to newID.                                       | `string`  | -       | Required if `replace_sample_id` == true        |
+| `fasta`             | The reference genome FASTA file                                                                                          | `string`  | -       | Required if processing GVCFs and/or CRAM files |
+| `fai`               | The reference genome FASTA index file                                                                                    | `string`  | -       | Required if processing GVCFs and/or CRAM files |
+| `fasta_dict`        | The reference genome sequence dictionary file                                                                            | `string`  | -       | Required if processing GVCFs and/or CRAM files |
+
+</details>
+
+For a full list of parameters, run the pipeline with the `--help` flag:
+
+```bash
+nextflow run Ferlab-Ste-Justine/seq-data-validation -r v1.2.0 --help
+```
+
+## Replacing sample IDs
 
 If you wish to replace sample IDs in the input files, you need to provide a mapping file with old and new sample IDs. Its location has to be specified with `--id_mapping`, along with setting `--replace_sample_id true` to enable the sample ID replacement in the input files.
 

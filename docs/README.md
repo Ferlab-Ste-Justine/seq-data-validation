@@ -6,3 +6,5 @@ The Ferlab-Ste-Justine/seq-data-validation documentation is split into the follo
   - An overview of how the pipeline works, how to run it and a description of all of the different command-line flags.
 - [Output](output.md)
   - An overview of the different results produced by the pipeline and how to interpret them.
+- [System requirements](system_requirements.md)
+  - A description of the system requirements needed to run the pipeline, including hardware, software and dependencies.

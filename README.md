@@ -92,7 +92,7 @@ When input contains CRAM or GVCF files, reference genome files must be provided.
 
   ```bash
   nextflow run Ferlab-Ste-Justine/seq-data-validation -profile docker \
-      -r v1.0.0 \
+      -r v1.1.0 \
       -params-file params.json
   ```
 
@@ -100,10 +100,10 @@ When input contains CRAM or GVCF files, reference genome files must be provided.
 
   ```bash
   nextflow run Ferlab-Ste-Justine/seq-data-validation -profile docker \
-      -r v1.0.0 \
+      -r v1.1.0 \
       --input samplesheet.csv \
       --outdir <OUTDIR> \
-      --replace_sample true \
+      --replace_sample_id true \
       -params-file params.json
   ```
 
@@ -113,7 +113,7 @@ When input contains CRAM or GVCF files, reference genome files must be provided.
 
   ```bash
   nextflow -c app.config run Ferlab-Ste-Justine/seq-data-validation \
-      -r v1.0.0 \
+      -r v1.1.0 \
       --input samplesheet.csv \
       --outdir <OUTDIR> \
       -params-file params.json
