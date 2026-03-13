@@ -5,6 +5,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+## v1.1.1 - [13/03/26]
+
+- [#28](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/28) Allow Nextflow versions ≥24.10
+
 ## v1.1.0 - [28/01/26]
 
 ### `Added`

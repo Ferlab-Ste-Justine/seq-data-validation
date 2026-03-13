@@ -1,7 +1,10 @@
 #!/usr/bin/env nextflow
 
 // Enable Nextflow preview features
-nextflow.preview.topic = true
+def version_25_04 = new nextflow.util.VersionNumber('25.04.0')
+if (nextflow.version < version_25_04) {
+    nextflow.preview.topic = true
+}
 // Enable module binaries
 nextflow.enable.moduleBinaries = true
 
