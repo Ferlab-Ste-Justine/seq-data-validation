@@ -61,7 +61,7 @@ def write_manifest(sample, file_list, parent_path=None):
     """
     manifest_path = os.path.join(os.getcwd(), "file_manifest.tsv")
     with open(manifest_path, "w", encoding="utf-8") as manifest_file:
-        manifest_file.write(submitter_sample_id\tsubmitter_file_name\tfile_size\tfile_md5sum\tfile_type\n")
+        manifest_file.write("submitter_sample_id\tsubmitter_file_name\tfile_size\tfile_md5sum\tfile_type\n")
         for file_path, file_type in file_list:
             if os.path.exists(file_path):
                 entry = file_manifest(file_path, file_type, parent_path)
