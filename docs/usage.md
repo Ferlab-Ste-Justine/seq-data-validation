@@ -26,14 +26,14 @@ P001,S001,sample1.gvcf,sample1.gvcf.tbi
 
 ### Full samplesheet
 
-The pipeline can auto-detect the `fileType` from the file name, but it is recommended to provide it. Similarly for alignment and variant files, the pipeline can search for the index file, assuming it is located in the same path and has the same name as the data file + relevant suffix.
+The pipeline can auto-detect the `file_type` from the file name, but it is recommended to provide it. Similarly for alignment and variant files, the pipeline can search for the index file, assuming it is located in the same path and has the same name as the data file + relevant suffix.
 
 If the data consists of paired-end raw reads, both files **must** be provided.
 
 A final samplesheet file consisting of mixed data types may look something like the one below:
 
 ```csv title="samplesheet.csv"
-participant,sample,fileType,file1,file2
+participant,sample,file_type,file1,file2
 P001,S001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
 P001,S001,BAM,sample1.bam,sample1.bam.bai
 P001,S001,GVCF,sample1.gvcf,sample1.gvcf.tbi
@@ -48,7 +48,7 @@ P002,S002,GVCF,sample2.gvcf.gz
 | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
 | `participant`\* | Unique identifier for the participant. This entry will be identical for all samples from the same participant. Spaces in participant names are automatically converted to underscores (`_`).                                                                                    |
 | `sample`\*      | Custom sample name. This entry will be identical for multiple sequencing libraries/runs from the same sample. Spaces in sample names are automatically converted to underscores (`_`). **This field will be used to name output files and directories.**                        |     |
-| `fileType`      | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix.                              |
+| `file_type`     | Type of data file. Accepted values are `FASTQ`, `BAM`, `CRAM`, `VCF`, or `GVCF`. This information is used to determine the appropriate validation steps for each file. If empty, the pipeline will attempt to infer data type based on the suffix.                              |
 | `file1`\*       | Full path to the primary data file. For FASTQ files, this is the first read in paired-end data or the single read in single-end data. For other file types, this is the data file itself. **Supports remote s3 paths.**                                                         |
 | `file2`         | Full path to the secondary data file. For paired-end FASTQ files, this is the second read. For other file types this is the index file; if empty, the pipeline will assume index files are located in the same directory as the primary data file. **Supports remote s3 paths** |
 

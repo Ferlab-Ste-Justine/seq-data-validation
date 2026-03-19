@@ -49,13 +49,13 @@ First, prepare a samplesheet with your input data that looks as follows:
 `samplesheet.csv`:
 
 ```csv
-participant,sample,fileType,file1,file2
+participant,sample,file_type,file1,file2
 P001,S001,FASTQ,sample1_R1.fastq.gz,sample1_R2.fastq.gz
 P001,S001,BAM,sample1.bam,sample1.bam.bai
 P001,S001,GVCF,sample1.gvcf,sample1.gvcf.idx
 ```
 
-Each row represents a data file or a pair of files (FASTQ pairs or data file and its index). The `fileType` column indicates the type of data (FASTQ, BAM, CRAM, VCF, GVCF). The `file1` and `file2` columns contain the paths to the data files. For single-end FASTQ files or data files without an index, leave the `file2` column empty.
+Each row represents a data file or a pair of files (FASTQ pairs or data file and its index). The `file_type` column indicates the type of data (FASTQ, BAM, CRAM, VCF, GVCF). The `file1` and `file2` columns contain the paths to the data files. For single-end FASTQ files or data files without an index, leave the `file2` column empty.
 
 [!NOTE] If running the optional Sample ID Replacement module `--replace_sample_id true`, prepare a CSV file mapping old sample IDs to new sample IDs:
 
