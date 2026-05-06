@@ -73,7 +73,7 @@
                 "fasta": {
                     "type": "string",
                     "description": "The reference genome FASTA file",
-                    "pattern": "^.*\\.fasta$",
+                    "pattern": "^.*\\.fa(sta)?$",
                     "format": "file-path"
                 },
                 "fai": {
