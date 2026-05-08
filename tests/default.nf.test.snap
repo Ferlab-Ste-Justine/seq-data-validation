@@ -1,0 +1,181 @@
+{
+    "-profile test": {
+        "content": [
+            43,
+            {
+                "GATK4_VALIDATEVARIANTS": {
+                    "gatk4": "4.5.0.0"
+                },
+                "PARSE_BAM_HEADER": {
+                    "bam_parse_header.py": "bam_parse_header.py 1.0.0"
+                },
+                "PARSE_DRAGEN": {
+                    "parse_dragen_files.py": "parse_dragen_files.py 1.0.0"
+                },
+                "PARSE_VCF_HEADER": {
+                    "vcf_parse_header.py": "vcf_parse_header.py 1.0.1"
+                },
+                "PICARD_VALIDATESAMFILE": {
+                    "picard": "3.4.0"
+                },
+                "SAMTOOLS_ADDREPLACERG": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_QUICKCHECK": {
+                    "samtools": "1.22.1"
+                },
+                "SAMTOOLS_REHEADER": {
+                    "samtools": "1.22.1"
+                },
+                "SEQFU_CHECK": {
+                    "seqfu": "1.22.3"
+                },
+                "WRITE_MANIFEST": {
+                    "write_manifest.py": "write_manifest.py 1.0.0"
+                },
+                "Workflow": {
+                    "Ferlab-Ste-Justine/seq-data-validation": "v1.1.1"
+                }
+            },
+            [
+                "file_integrity",
+                "file_integrity/file_integrity_report.json",
+                "fq",
+                "fq/S002.fq_lint.txt",
+                "gatk4",
+                "gatk4/S001.validateVariants.txt",
+                "gatk4/S002.validateVariants.txt",
+                "manifest",
+                "manifest/manifest.tsv",
+                "multiqc",
+                "multiqc/multiqc_data",
+                "multiqc/multiqc_data/llms-full.txt",
+                "multiqc/multiqc_data/multiqc.log",
+                "multiqc/multiqc_data/multiqc.parquet",
+                "multiqc/multiqc_data/multiqc_citations.txt",
+                "multiqc/multiqc_data/multiqc_data.json",
+                "multiqc/multiqc_data/multiqc_file_integrity_report.txt",
+                "multiqc/multiqc_data/multiqc_software_versions.txt",
+                "multiqc/multiqc_data/multiqc_sources.txt",
+                "multiqc/multiqc_plots",
+                "multiqc/multiqc_plots/pdf",
+                "multiqc/multiqc_plots/pdf/file_integrity_report.pdf",
+                "multiqc/multiqc_plots/png",
+                "multiqc/multiqc_plots/png/file_integrity_report.png",
+                "multiqc/multiqc_plots/svg",
+                "multiqc/multiqc_plots/svg/file_integrity_report.svg",
+                "multiqc/multiqc_report.html",
+                "picard",
+                "picard/S001.validatesam.hist.txt",
+                "picard/S002.validatesam.hist.txt",
+                "pipeline_info",
+                "pipeline_info/seq-data-validation_software_mqc_versions.yml",
+                "results",
+                "results/S001",
+                "results/S001/S001.candidateSV.chr22_50000000-51000000.vcf.gz",
+                "results/S001/S001.candidateSV.chr22_50000000-51000000.vcf.gz.tbi",
+                "results/S001/S001.candidate_metrics.csv",
+                "results/S001/S001.chr22.cnv.gff3",
+                "results/S001/S001.chr22.roh.bed",
+                "results/S001/S001.chr22.target.counts.gz",
+                "results/S001/S001.chr22_50000000-51000000.bam",
+                "results/S001/S001.chr22_50000000-51000000.bam.bai",
+                "results/S001/S001.chr22_50000000-51000000.cnv.vcf.gz",
+                "results/S001/S001.chr22_50000000-51000000.cnv.vcf.gz.tbi",
+                "results/S001/S001.chr22_50000000-51000000.g.vcf.gz",
+                "results/S001/S001.chr22_50000000-51000000.g.vcf.gz.tbi",
+                "results/S001/S001.chr22_50000000-51000000.sv.vcf.gz",
+                "results/S001/S001.chr22_50000000-51000000.sv.vcf.gz.tbi",
+                "results/S001/S001.cnv.excluded_intervals.bed.gz",
+                "results/S001/S001.cnv.igv_session.small.xml",
+                "results/S001/S001.cnv_metrics.csv",
+                "results/S001/S001.insert-stats.tab",
+                "results/S001/S001.seg.bw",
+                "results/S001/S001.svLocusGraphStats.tsv",
+                "results/S001/S001.sv_metrics.csv",
+                "results/S001/S001.target.counts.bw",
+                "results/S001/S001.wgs_overall_mean_cov.csv",
+                "results/S001/logs",
+                "results/S001/logs/S001.sample_rename.others.log",
+                "results/S001/logs/S001.sample_rename.seq_data.log",
+                "results/S001/manifest",
+                "results/S001/manifest/manifest_S001.tsv",
+                "results/S002",
+                "results/S002/S002.SRR764716_1.filt.sub50.fastq.gz",
+                "results/S002/S002.SRR764716_2.filt.sub50.fastq.gz",
+                "results/S002/S002.chr22_50000000-51000000.cram",
+                "results/S002/S002.chr22_50000000-51000000.cram.crai",
+                "results/S002/S002.final.cnv_sv.chr22.vcf.gz",
+                "results/S002/S002.final.cnv_sv.chr22.vcf.gz.tbi",
+                "results/S002/S002.final.cyp2b6.tsv",
+                "results/S002/S002.final.hard-filtered.chr22_50000000-51000000.vcf.gz",
+                "results/S002/S002.final.hard-filtered.chr22_50000000-51000000.vcf.gz.tbi",
+                "results/S002/S002.final.hla_full_resolution_EM.tsv",
+                "results/S002/S002.final.star_allele.json",
+                "results/S002/S002.final.targeted.nodata.vcf.gz",
+                "results/S002/S002.final.targeted.nodata.vcf.gz.tbi",
+                "results/S002/logs",
+                "results/S002/logs/S002.sample_rename.others.log",
+                "results/S002/logs/S002.sample_rename.seq_data.log",
+                "results/S002/manifest",
+                "results/S002/manifest/manifest_S002.tsv",
+                "samtools",
+                "samtools/S001.quickcheck.txt",
+                "samtools/S002.quickcheck.txt",
+                "seqfu",
+                "seqfu/S002.check.tsv",
+                "write",
+                "write/S001_manifest.tsv",
+                "write/S002_manifest.tsv"
+            ],
+            [
+                "multiqc_citations.txt:md5,4c806e63a283ec1b7e78cdae3a923d4f",
+                "S001.validatesam.hist.txt:md5,50b8308ddc929e9986c408fc13ced0f5",
+                "S002.validatesam.hist.txt:md5,5552cfeb9cdab03b325eaaf0f4f30e09",
+                "S001.candidateSV.chr22_50000000-51000000.vcf.gz:md5,4c48b5600def8b6ce758fd2ef4f9fa5d",
+                "S001.candidateSV.chr22_50000000-51000000.vcf.gz.tbi:md5,37985d016a154234a13eadc6fcead9fc",
+                "S001.candidate_metrics.csv:md5,ff6dd72c88ee8d4fdc50f9bd0510c241",
+                "S001.chr22.cnv.gff3:md5,535eea6aa08b8404fb90f14a6715f14c",
+                "S001.chr22.roh.bed:md5,6251ec787abcd4263004d65ac2574f10",
+                "S001.chr22.target.counts.gz:md5,76ee9a0222442f5359eb07741815692e",
+                "S001.chr22_50000000-51000000.bam:md5,db3f9661aae625ad8b0d2447ed9a8399",
+                "S001.chr22_50000000-51000000.bam.bai:md5,60359d8813b18956b08176c7e40d862e",
+                "S001.chr22_50000000-51000000.cnv.vcf.gz:md5,3af68a73e21bc277164f1161c9ef5665",
+                "S001.chr22_50000000-51000000.cnv.vcf.gz.tbi:md5,27e93a06db23d31bb8575b9ef2d8dd57",
+                "S001.chr22_50000000-51000000.g.vcf.gz:md5,e763a4c4a1ab1c6e6d9d448aef8478d4",
+                "S001.chr22_50000000-51000000.g.vcf.gz.tbi:md5,21970530721639b27f4b984620ecaca5",
+                "S001.chr22_50000000-51000000.sv.vcf.gz:md5,7648333506a996a57b0796e6cb4f27e8",
+                "S001.chr22_50000000-51000000.sv.vcf.gz.tbi:md5,a284cfad337bfa073ede484c753059ea",
+                "S001.cnv.excluded_intervals.bed.gz:md5,24ddeaaef0e6e90043e8fd5794f0a2c9",
+                "S001.cnv.igv_session.small.xml:md5,0191e36a58913424ec162d58289fbd58",
+                "S001.cnv_metrics.csv:md5,652afe259de6f569af4eb6bcc216f57d",
+                "S001.insert-stats.tab:md5,35c7b060e79de48d0ba98b0217d0bee0",
+                "S001.seg.bw:md5,fe99dd98b80195a39c76a2bf3ff3e2c8",
+                "S001.svLocusGraphStats.tsv:md5,613ed55f9fae9de98e0d66757e9431d8",
+                "S001.sv_metrics.csv:md5,40d7f784f6d7cf928e50b2e5fce7587d",
+                "S001.target.counts.bw:md5,0f170ac5bc637bc0195eabb37f2d1922",
+                "S001.wgs_overall_mean_cov.csv:md5,e373e474c07b3941ca7745e093aa0e64",
+                "S002.SRR764716_1.filt.sub50.fastq.gz:md5,c723b721f93ff70cc89935b898fbe091",
+                "S002.SRR764716_2.filt.sub50.fastq.gz:md5,d35a84af4e214e36c120e367c2d981f2",
+                "S002.chr22_50000000-51000000.cram:md5,5dfcc9897009bbf4f76bdc80a79a5642",
+                "S002.chr22_50000000-51000000.cram.crai:md5,c3b7c416e9801835212c6620e7f70c5b",
+                "S002.final.cnv_sv.chr22.vcf.gz:md5,8168ced908912dedee0921583e6ab869",
+                "S002.final.cnv_sv.chr22.vcf.gz.tbi:md5,3b3ecbc423c4a8a84175f55bf5a22512",
+                "S002.final.cyp2b6.tsv:md5,ddb514ea870bd0f564152ad9b89224fd",
+                "S002.final.hard-filtered.chr22_50000000-51000000.vcf.gz:md5,e8b01ce300c1c09b1c6b2ede60717460",
+                "S002.final.hard-filtered.chr22_50000000-51000000.vcf.gz.tbi:md5,298f796b63bcd8f6a0ce0f07b59c286f",
+                "S002.final.hla_full_resolution_EM.tsv:md5,1c9789d1a6a6b470a20da2480cdce369",
+                "S002.final.star_allele.json:md5,7365f6b5e4fbd6fa87e7c0c723982f39",
+                "S002.final.targeted.nodata.vcf.gz:md5,95c8ada94005fe7ff8c78ae6ec901d1d",
+                "S002.final.targeted.nodata.vcf.gz.tbi:md5,4cb176febbc8c26d717a6c6e67b9c905",
+                "S001.quickcheck.txt:md5,d41d8cd98f00b204e9800998ecf8427e",
+                "S002.quickcheck.txt:md5,d41d8cd98f00b204e9800998ecf8427e"
+            ]
+        ],
+        "meta": {
+            "nf-test": "0.9.3",
+            "nextflow": "24.10.5"
+        },
+        "timestamp": "2026-05-11T11:56:45.108233"
+    }
+}
