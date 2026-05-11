@@ -67,7 +67,12 @@
                     "TSV",
                     "TXT",
                     "VCF",
-                    "XML"
+                    "XML",
+                    "JSON",
+                    "BED",
+                    "bigWig",
+                    "BW",
+                    "GFF3"
                 ]
             },
             "data_type": {

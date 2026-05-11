@@ -5,6 +5,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## Unreleased
 
+### `Added`
+
+- [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Add test profile.
+
+### `Changed`
+
+- [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Better way to validate file suffix.
+
+### `Fixed`
+
+- [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Fixes to schema to allow .fa as extension, fix staging of reference file in addreplacereadgroup module, added more filetypes to input schema.
+
 ## v1.1.1 - [13/03/26]
 
 - [#28](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/28) Allow Nextflow versions ≥24.10

@@ -187,45 +187,32 @@ def inferFileTypeFromExtension(file, fileType=null) {
     def name = file.getFileName().toString() - '.gz'
 
     def indexFileTypes = ["BAI","CRAI","CSI","TBI"]
-    // Define mappings from file type to a list of possible extensions.
-    def fileTypeMappings = [
+    // GVCF must come before VCF so '.g.vcf' is matched before '.vcf'.
+    def fileTypes = ["BED", "JSON", "GFF3", "bigWig", "GVCF","VCF","FASTQ","BAM","BIN","CRAM","BAI","CRAI","CSI","TBI","SAM","CSV","TSV","TXT","MD5","FAM","PED","HTML","XML","IDX"]
+    // Override entries for file types whose suffix is not just '.${type.toLowerCase()}'.
+    def extraExtensions = [
         "GVCF" : ['.gvcf', '.g.vcf'],
-        "VCF"  : ['.vcf'],
         "FASTQ": ['.fastq', '.fq'],
-        "BAM"  : ['.bam'],
-        "BIN"  : ['.bin'],
-        "CRAM" : ['.cram'],
-        "BAI"  : ['.bai'],
-        "CRAI" : ['.crai'],
-        "CSI"  : ['.csi'],
-        "TBI"  : ['.tbi'],
-        "SAM"  : ['.sam'],
-        "CSV"  : ['.csv'],
-        "TSV"  : ['.tsv'],
-        "TXT"  : ['.txt'],
-        "MD5"  : ['.md5'],
-        "FAM"  : ['.fam'],
-        "PED"  : ['.ped'],
-        "HTML" : ['.html'],
-        "XML"  : ['.xml'],
-        "IDX"  : ['.idx']
+        "bigWig": ['.bigwig', '.bw'],
+        "TSV": ['.tsv', '.tab'],
     ]
 
-    // Find the first map entry where any of its extensions match the end of the filename.
-    def matchedEntry = fileTypeMappings.find { entry ->
-        entry.value.any { extension -> name.endsWith(extension) }
+    def matchedType = fileTypes.find { type ->
+        def extensions = extraExtensions[type] ?: [".${type.toLowerCase()}"]
+        extensions.any { extension -> name.endsWith(extension) }
     }
 
-    if (matchedEntry) {
+    if (matchedType) {
         // Check if inferred fileType is an index file
-        if (matchedEntry?.key in indexFileTypes || fileType in indexFileTypes) {
+        if (matchedType in indexFileTypes || fileType in indexFileTypes) {
             error("Index files can only be provided as file2 accompanied by main data file for file: ${name}. Please check the input samplesheet.")
         }
         // if fileType exists, check it matches inferred fileType - Validation
-        if (fileType && matchedEntry?.key != fileType) {
-            error("Inferred fileType '${matchedEntry.key}' from file extension does not match provided fileType '${fileType}' for file: ${name}. Please check the input samplesheet.")
+        // Allow specific case of BW files in samplesheet and rename to bigWig to match dictionary
+        if (fileType && matchedType != fileType && fileType != "BW") {
+            error("Inferred fileType '${matchedType}' from file extension does not match provided fileType '${fileType}' for file: ${name}. Please check the input samplesheet.")
         }
-        return matchedEntry.key
+        return matchedType
     } else {
         if (fileType) {
             log.warn("Could not validate fileType from file extension for file: ${name}. Using provided fileType: ${fileType}.")

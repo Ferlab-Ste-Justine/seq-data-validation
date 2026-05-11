@@ -9,7 +9,7 @@ process SAMTOOLS_ADDREPLACERG {
 
     input:
     tuple val(meta), path(input), val(rg_line), val(rgid)
-    val(reference)
+    path(reference)
 
     output:
     tuple val(meta), path("*.{bam,cram}") , emit: bam
