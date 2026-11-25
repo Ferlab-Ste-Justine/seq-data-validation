@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 - [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Fixes to schema to allow .fa as extension, fix staging of reference file in addreplacereadgroup module, added more filetypes to input schema.
+- BIOINFO-252 Accept integers for `participant` and `sample` in the input samplesheet, and for `oldID` and `newID` in the ID mapping file.
+- BIOINFO-252 Fix `PARSE_DRAGEN` stub to produce the same outputs as the script (renamed files, log and file manifest).
+- BIOINFO-252 Fix `file_type` column name in example samplesheet `assets/samplesheet.csv`.
 
 ## v1.1.1 - [13/03/26]
 

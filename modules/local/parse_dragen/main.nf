@@ -42,10 +42,19 @@ process PARSE_DRAGEN {
 
     stub:
     prefix = task.ext.prefix ?: "${meta.id}"
+    def file_list = files.join(' ')
+    def types_list = types.join(' ')
     """
-    for file in inputs/*; do
-        touch "\$(basename \$file | sed "s/${oldID}/${newID}/")"
+    mkdir -p ${prefix}
+    printf "submitter_sample_id\\tsubmitter_file_name\\tfile_size\\tfile_md5sum\\tfile_type\\n" > file_manifest.tsv
+    files=(${file_list})
+    types=(${types_list})
+    for i in "\${!files[@]}"; do
+        new_name="\$(basename \${files[\$i]} | sed "s/${oldID}/${newID}/")"
+        touch "${prefix}/\$new_name"
+        printf "${newID}\\t\$new_name\\t0\\td41d8cd98f00b204e9800998ecf8427e\\t\${types[\$i]}\\n" >> file_manifest.tsv
     done
+    echo "INFO - Stub run: replaced ${oldID} with ${newID} in file names" > ${newID}.sample_rename.others.log
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":

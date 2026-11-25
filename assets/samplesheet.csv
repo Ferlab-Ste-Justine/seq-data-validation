@@ -1,4 +1,4 @@
-participant,sample,strategy,lane,fileType,file1,file2
+participant,sample,strategy,lane,file_type,file1,file2
 P001,S001,WGS,L001,FASTQ,data-test/test1/sample1_R1.fastq.gz,data-test/test1/sample1_R2.fastq.gz
 P001,S001,WGS,L002,FASTQ,data-test/test1/sample1_lane2_R1.fastq.gz,data-test/test1/sample1_lane2_R2.fastq.gz
 P001,S001,WGS,,BAM,data-test/test1/sample1.bam,data-test/test1/sample1.bam.bai
