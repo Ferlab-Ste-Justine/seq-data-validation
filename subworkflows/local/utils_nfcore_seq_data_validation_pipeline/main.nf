@@ -69,7 +69,9 @@ workflow PIPELINE_INITIALISATION {
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map { meta, file1, file2 ->
             def fileType = inferFileTypeFromExtension(file1, meta.fileType)
-            [ meta + [ participant_sample: "${meta.participant}_${meta.sample}", fileType: fileType ], [file1, file2] ]
+            // IDs may be parsed as integers by nf-schema: cast them to strings
+            def ids = [ id: meta.id.toString(), participant: meta.participant.toString(), sample: meta.sample.toString() ]
+            [ meta + ids + [ participant_sample: "${ids.participant}_${ids.sample}", fileType: fileType ], [file1, file2] ]
         }
         .tap { ch_participant_sample } // save raw input channel
         .map { _meta, files -> files }
@@ -114,7 +116,7 @@ workflow PIPELINE_INITIALISATION {
 
     if (params.id_mapping) {
         channel.fromList(samplesheetToList(params.id_mapping, "${projectDir}/assets/schema_id_mapping.json"))
-            .map { row -> [ row[0], row[1] ] }
+            .map { row -> [ row[0].toString(), row[1].toString() ] } // IDs may be parsed as integers by nf-schema
             .set { id_replace_map }
 
         ch_samplesheet = ch_samplesheet

@@ -8,13 +8,13 @@
         "type": "object",
         "properties": {
             "participant": {
-                "type": "string",
+                "type": ["string", "integer"],
                 "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "participant ID must be provided and cannot contain spaces",
                 "meta": ["participant"]
             },
             "sample": {
-                "type": "string",
+                "type": ["string", "integer"],
                 "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "Sample ID must be provided and cannot contain spaces",
                 "meta": ["id", "sample"]
