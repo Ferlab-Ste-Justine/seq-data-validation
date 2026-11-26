@@ -42,6 +42,15 @@ require nextflow
 require nf-test
 require nf-core
 
+# Steps 3 and 5 run the test profile, whose inputs (conf/test.config) all live
+# under the gitignored data-test/ -- fail here with the fix instead of deep
+# inside nf-schema's parameter validation.
+if [ ! -d data-test ]; then
+    echo "ERROR: data-test/ not found. Sync it first (same dataset as .github/workflows/nf-test.yml):" >&2
+    echo "  aws s3 cp s3://ferlab-public-dataset/nextflow/seq-data-validation/V1/data-test data-test --recursive" >&2
+    exit 1
+fi
+
 step() { echo; echo "==> $1"; }
 
 # If .snap file needs to be generated.
