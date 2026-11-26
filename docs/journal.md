@@ -29,19 +29,20 @@ Invalid method invocation `doCall` with arguments: [[id:456, ...], null, .../fil
 
 **Failing tests and causes:**
 
-| Test | Cause |
-| --- | --- |
-| `modules/local/bcftools/head` | Passes a `.bam` (`test.paired_end.sorted.bam`) to `bcftools head`, which needs a VCF/BCF. |
-| `modules/local/header_parser/parsevcf` | Same: passes a `.bam` to `vcf_parse_header.py`. |
-| `modules/local/header_parser/parsebam` | Test meta has no old/new IDs, so the command gets `--old_id null --new_id null` and the script raises `RGSM record does not match any given IDs`. |
-| `modules/local/picard/validatesamfile` | Still the nf-core template (`// TODO nf-core` comments). Gives 1 input; the process takes 4 (`[meta, bam, bai]`, `[meta2, fasta]`, `[meta3, fai]`, `[meta4, dict]`). |
-| `modules/local/samtools/samples` | Same as above: template test giving 1 input; the process takes 4. |
-| `modules/local/samtools/reheader` | Input tuple is `[meta, bam]`; the process expects `[meta, input, header]`, so it fails with `Path value cannot be null`. Both the real test and the stub test fail. |
-| `modules/local/seqfu/check` | `tests/nextflow.config` sets `ext.args = params.module_args` inside a `withName:` block, which current Nextflow rejects (`Unknown config attribute process.withName:SEQFU_CHECK.params.module_args`). The `test_seqfu_fail - Safe exit` test also fails with a `NullPointerException` on `get()`. |
-| `subworkflows/local/bam_id_repair` | Gives no inputs; the subworkflow now takes 2 input channels. |
-| `subworkflows/local/vcf_id_repair` | Input setup no longer matches the subworkflow (`Missing process or function map(...)`). |
+| Test                                   | Cause                                                                                                                                                                                                                                                                                             |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `modules/local/bcftools/head`          | Passes a `.bam` (`test.paired_end.sorted.bam`) to `bcftools head`, which needs a VCF/BCF.                                                                                                                                                                                                         |
+| `modules/local/header_parser/parsevcf` | Same: passes a `.bam` to `vcf_parse_header.py`.                                                                                                                                                                                                                                                   |
+| `modules/local/header_parser/parsebam` | Test meta has no old/new IDs, so the command gets `--old_id null --new_id null` and the script raises `RGSM record does not match any given IDs`.                                                                                                                                                 |
+| `modules/local/picard/validatesamfile` | Still the nf-core template (`// TODO nf-core` comments). Gives 1 input; the process takes 4 (`[meta, bam, bai]`, `[meta2, fasta]`, `[meta3, fai]`, `[meta4, dict]`).                                                                                                                              |
+| `modules/local/samtools/samples`       | Same as above: template test giving 1 input; the process takes 4.                                                                                                                                                                                                                                 |
+| `modules/local/samtools/reheader`      | Input tuple is `[meta, bam]`; the process expects `[meta, input, header]`, so it fails with `Path value cannot be null`. Both the real test and the stub test fail.                                                                                                                               |
+| `modules/local/seqfu/check`            | `tests/nextflow.config` sets `ext.args = params.module_args` inside a `withName:` block, which current Nextflow rejects (`Unknown config attribute process.withName:SEQFU_CHECK.params.module_args`). The `test_seqfu_fail - Safe exit` test also fails with a `NullPointerException` on `get()`. |
+| `subworkflows/local/bam_id_repair`     | Gives no inputs; the subworkflow now takes 2 input channels.                                                                                                                                                                                                                                      |
+| `subworkflows/local/vcf_id_repair`     | Input setup no longer matches the subworkflow (`Missing process or function map(...)`).                                                                                                                                                                                                           |
 
 **To fix:**
+
 - Update each test to the module's current `input:` block, using real test data of the right type (e.g. a VCF from nf-core test-datasets for the VCF tools, and meta that carries the IDs the header parsers need).
 - Move `module_args` in the SEQFU test config to a top-level `params {}` block (or set `ext.args` directly).
 - Regenerate the snapshots (`--updateSnapshot`). The failing run created new `.snap` entries for some of these tests; review them rather than trusting them.
