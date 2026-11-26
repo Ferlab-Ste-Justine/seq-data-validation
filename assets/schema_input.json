@@ -8,7 +8,7 @@
         "type": "object",
         "properties": {
             "participant": {
-                "type": ["string", "integer"],
+                "type": ["string", "integer", "number"],
                 "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "participant ID must be provided and cannot contain spaces",
                 "meta": ["participant"]
