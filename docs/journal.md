@@ -47,3 +47,21 @@ Invalid method invocation `doCall` with arguments: [[id:456, ...], null, .../fil
 - Move `module_args` in the SEQFU test config to a top-level `params {}` block (or set `ext.args` directly).
 - Regenerate the snapshots (`--updateSnapshot`). The failing run created new `.snap` entries for some of these tests; review them rather than trusting them.
 - Then decide whether `run-test-suite.sh` step 5 should keep running the whole suite or use `--changed-since main` to match CI.
+
+## 2026-11-26 – `-stub` runs crash on FASTQ inputs: `RENAME_FASTQ` has no stub
+
+**Status:** Confirmed, not fixed (found while working on BIOINFO-252). To address in a separate ticket.
+
+**Where:** `modules/local/rename_fastq/main.nf`, the only local module without a `stub:` block.
+
+**What:** Any `-stub` run whose samplesheet contains FASTQ rows fails at `RENAME_FASTQ` with:
+
+```
+Error executing process > 'FERLAB_VALIDATION:SEQ_DATA_VALIDATION:RENAME_FASTQ (1)'
+Caused by:
+  Cannot invoke method clone() on null object
+```
+
+Nextflow cannot resolve a stub for the process (`TaskRun.resolveStub`). Reproduced with `NXF_VER=24.10.2 nextflow run . -profile test -stub` on the unmodified `data-test/testSamplesheet.csv`, which has one FASTQ pair (P002/S002). Samplesheets without FASTQ rows are not affected. Not checked on other Nextflow versions.
+
+**Possible fix:** add a stub that mirrors the script's renaming, e.g. loop over `fastq_files` and `touch` the renamed file names (`${meta.sample}` substituted for `${meta.old_id}`, or prefixed when the old ID is absent), so the `*fastq*` output glob matches.
