@@ -10,12 +10,12 @@
         "type": "object",
         "properties": {
             "newID": {
-                "type": "string",
+                "type": ["string", "integer"],
                 "pattern": "^[A-Za-z0-9\\-\\._]{1,250}$",
                 "errorMessage": "newID must be provided and cannot contain spaces"
             },
             "oldID": {
-                "type": "string",
+                "type": ["string", "integer"],
                 "pattern": "^\\S+$",
                 "errorMessage": "oldID must be provided and cannot contain spaces"
             }
