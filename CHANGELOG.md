@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Add test profile.
 - [#33](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/33) Run the pipeline nf-test in CI on the S3 test dataset, with Docker under Nextflow 24.10.2, 25.10.4 and latest, and add its snapshot.
-- [#34](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/34) Add `scripts/run-test-suite.sh` (local checks mirroring CI) and `scripts/run-smoke-tests.sh` (manual runs on the S3 test dataset).
+- [#35](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/35) Add `scripts/run-test-suite.sh` (local checks mirroring CI) and `scripts/run-smoke-tests.sh` (manual runs on the S3 test dataset).
 
 ### `Changed`
 
@@ -19,9 +19,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Fixed`
 
 - [#32](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/32) Fixes to schema to allow .fa as extension, fix staging of reference file in addreplacereadgroup module, added more filetypes to input schema.
-- [#34](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/34) Accept integers for `participant` and `sample` in the input samplesheet, and for `oldID` and `newID` in the ID mapping file.
-- [#34](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/34) Fix `PARSE_DRAGEN` stub to produce the same outputs as the script (renamed files, log and file manifest).
-- [#34](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/34) Fix `file_type` column name in example samplesheet `assets/samplesheet.csv`.
+- [#35](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/35) Accept integers for `participant` and `sample` in the input samplesheet, and for `oldID` and `newID` in the ID mapping file.
+- [#35](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/35) Fix `PARSE_DRAGEN` stub to produce the same outputs as the script (renamed files, log and file manifest).
+- [#35](https://github.com/Ferlab-Ste-Justine/seq-data-validation/pull/35) Fix `file_type` column name in example samplesheet `assets/samplesheet.csv`.
 
 ## v1.1.1 - [13/03/26]
 
