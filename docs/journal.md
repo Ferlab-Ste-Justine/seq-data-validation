@@ -20,3 +20,29 @@ Invalid method invocation `doCall` with arguments: [[id:456, ...], null, .../fil
 
 **Possible fix:** after the join, pad missing values, e.g.
 `.map { meta, types, files1, files2, others -> ... }` handling the 3-element case, or emit `[meta, [], [], [], others]` for samples with no genomic files. `WRITE_MANIFEST` would also need to accept an empty file list (or be skipped) for those samples.
+
+## 2026-11-26 – Local module/subworkflow nf-tests are out of date
+
+**Status:** Pre-existing, not fixed (found while working on BIOINFO-252). To address in a separate ticket.
+
+**Context:** `scripts/run-test-suite.sh` step 5 runs `nf-test test --profile +docker`, i.e. **every** `.nf.test` in the repo. CI (`.github/actions/nf-test/action.yml`) runs `nf-test test --changed-since HEAD^`, so it only runs tests related to the files a commit touches. As a result, the tests under `modules/local/**/tests/` and `subworkflows/local/**/tests/` have rarely run in CI, and most haven't been updated since Nov–Dec 2025 while their modules kept changing. Locally, step 5 therefore fails on tests unrelated to the current branch. `tests/default.nf.test` (the full-pipeline test) is the one nf-test selects with `--changed-since main` for a typical branch.
+
+**Failing tests and causes:**
+
+| Test | Cause |
+| --- | --- |
+| `modules/local/bcftools/head` | Passes a `.bam` (`test.paired_end.sorted.bam`) to `bcftools head`, which needs a VCF/BCF. |
+| `modules/local/header_parser/parsevcf` | Same: passes a `.bam` to `vcf_parse_header.py`. |
+| `modules/local/header_parser/parsebam` | Test meta has no old/new IDs, so the command gets `--old_id null --new_id null` and the script raises `RGSM record does not match any given IDs`. |
+| `modules/local/picard/validatesamfile` | Still the nf-core template (`// TODO nf-core` comments). Gives 1 input; the process takes 4 (`[meta, bam, bai]`, `[meta2, fasta]`, `[meta3, fai]`, `[meta4, dict]`). |
+| `modules/local/samtools/samples` | Same as above: template test giving 1 input; the process takes 4. |
+| `modules/local/samtools/reheader` | Input tuple is `[meta, bam]`; the process expects `[meta, input, header]`, so it fails with `Path value cannot be null`. Both the real test and the stub test fail. |
+| `modules/local/seqfu/check` | `tests/nextflow.config` sets `ext.args = params.module_args` inside a `withName:` block, which current Nextflow rejects (`Unknown config attribute process.withName:SEQFU_CHECK.params.module_args`). The `test_seqfu_fail - Safe exit` test also fails with a `NullPointerException` on `get()`. |
+| `subworkflows/local/bam_id_repair` | Gives no inputs; the subworkflow now takes 2 input channels. |
+| `subworkflows/local/vcf_id_repair` | Input setup no longer matches the subworkflow (`Missing process or function map(...)`). |
+
+**To fix:**
+- Update each test to the module's current `input:` block, using real test data of the right type (e.g. a VCF from nf-core test-datasets for the VCF tools, and meta that carries the IDs the header parsers need).
+- Move `module_args` in the SEQFU test config to a top-level `params {}` block (or set `ext.args` directly).
+- Regenerate the snapshots (`--updateSnapshot`). The failing run created new `.snap` entries for some of these tests; review them rather than trusting them.
+- Then decide whether `run-test-suite.sh` step 5 should keep running the whole suite or use `--changed-since main` to match CI.
