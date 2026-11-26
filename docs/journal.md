@@ -25,7 +25,7 @@ Invalid method invocation `doCall` with arguments: [[id:456, ...], null, .../fil
 
 **Status:** Pre-existing, not fixed (found while working on BIOINFO-252). To address in a separate ticket.
 
-**Context:** `scripts/run-test-suite.sh` step 5 runs `nf-test test --profile +docker`, i.e. **every** `.nf.test` in the repo. CI (`.github/actions/nf-test/action.yml`) runs `nf-test test --changed-since HEAD^`, so it only runs tests related to the files a commit touches. As a result, the tests under `modules/local/**/tests/` and `subworkflows/local/**/tests/` have rarely run in CI, and most haven't been updated since Nov–Dec 2025 while their modules kept changing. Locally, step 5 therefore fails on tests unrelated to the current branch. `tests/default.nf.test` (the full-pipeline test) is the one nf-test selects with `--changed-since main` for a typical branch.
+**Context:** `scripts/run-test-suite.sh` step 5 runs `nf-test test --profile +docker`, i.e. **every** `.nf.test` in the repo. CI (`.github/workflows/nf-test.yml` → `.github/actions/nf-test/action.yml`) runs `nf-test test --tag pipeline --changed-since HEAD^`, so it only runs tests tagged `pipeline` (only `tests/default.nf.test` is) that relate to the files a PR touches. As a result, the tests under `modules/local/**/tests/` and `subworkflows/local/**/tests/` never run in CI, and most haven't been updated since Nov–Dec 2025 while their modules kept changing. Locally, step 5 therefore fails on tests unrelated to the current branch. `tests/default.nf.test` (the full-pipeline test) is the one nf-test selects with `--changed-since main` for a typical branch.
 
 **Failing tests and causes:**
 
